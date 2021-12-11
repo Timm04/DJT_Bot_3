@@ -41,7 +41,7 @@ class Extras(commands.Cog):
     @commands.command()
     async def github(self, ctx):
         """Get a link to the github repository hosting the code for this bot."""
-        link = "https://github.com/friedrich-de/djt-bot"
+        link = "https://github.com/friedrich-de/DJT_Bot_3"
         await ctx.send(link)
 
     @commands.command(hidden=True)
