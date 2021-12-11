@@ -1,0 +1,6 @@
+py-cord
+srt
+requests
+boto3
+aiohttp
+GitPython
