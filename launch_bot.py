@@ -23,7 +23,7 @@ for filename in os.listdir('./cogs'):
         djtbot.load_extension(f'cogs.{filename[:-3]}')
         print(f"Loaded the following cog: {filename}")
 
-# djtbot.load_extension(f'cogs.create_djt')
+# djtbot.load_extension(f'cogs.mango_club')
 
 s3_client = boto3.client('s3')
 s3_client.download_file('newdjtbot', "token.txt", 'token.txt')

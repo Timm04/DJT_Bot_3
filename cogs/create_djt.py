@@ -33,6 +33,7 @@ djt_channels = {
                 ("vn", "VN of the Month: To talk in this channel react to the relevant message in #welcome. Check "
                        "pins for ongoing votes and the leaderboard."),
                 ("books", "Japanese books and group reads. | To write here react to the message in #welcome."),
+                ("manga", "Channel for the manga club."),
                 ("djt-radio", "Post or talk about music."),
                 ("public-apology", "Channel in which punished users can ask for forgiveness.")],
 
@@ -92,19 +93,21 @@ Taikou:
 Daiou: 
 - Access to emoji management through bot (up to 5 per user)
 - View the hidden mod channel
+
 Server Boosters:
 - All of the above (except server access and mod channel) and custom role image"""
 
 reactions_string = """React to this message to get the corresponding role.
 
 🖋️ : Visual novel reading challenge and access to the VN channel..
-📖 : Book club and access to the book club.
+📖 : Book club and access to the book channel.
+🥭 : Manga club and access to the manga channel.
 📹 : Mentionable role for group reading events.
 💬 : Mentionable role for having Japanese conversations.
 🎥 : Role for the movie evenings.
 ❗ : Role to get notifications when a bump is due in the bump channel.
 ⭐ : Role for general purpose events such as karaoke, challenges or competitions."""
-reaction_emojis = ['🖋️', '📖', '📹', '💬', '🎥', '❗', '⭐']
+reaction_emojis = ['🖋️', '📖', '🥭', '📹', '💬', '🎥', '❗', '⭐']
 
 invite_link_message = """Invite link always here: https://animecards.site/discord/ (bookmark it)
 
@@ -208,7 +211,8 @@ class Restoration(commands.Cog):
     async def create_roles(self, ctx):
         """Delete old roles and recreate all standard roles."""
 
-        roles_to_delete = [role for role in ctx.guild.roles if not role.is_default() and not role.is_premium_subscriber() and not role.is_bot_managed()]
+        roles_to_delete = [role for role in ctx.guild.roles if
+                           not role.is_default() and not role.is_premium_subscriber() and not role.is_bot_managed()]
         for role in roles_to_delete:
             await asyncio.sleep(1)
             await role.delete()
@@ -231,6 +235,7 @@ class Restoration(commands.Cog):
             "VN Manager": discord.Colour(int("c2aaaa", base=16)),
             "Book Club": discord.Colour.purple(),
             "Reading Stream": discord.Colour.dark_green(),
+            "Manga Club": discord.Colour.dark_purple(),
             "Movie": discord.Colour.green(),
             "Conversation": discord.Colour.dark_teal(),
             "Bumper": discord.Colour.teal(),
@@ -266,6 +271,7 @@ class Restoration(commands.Cog):
         everyone_role = discord.utils.get(ctx.guild.roles, name='@everyone')
         muted_role = discord.utils.get(ctx.guild.roles, name='Muted')
         vn_role = discord.utils.get(ctx.guild.roles, name='VN Challenge')
+        manga_role = discord.utils.get(ctx.guild.roles, name='Manga Club')
         book_role = discord.utils.get(ctx.guild.roles, name='Book Club')
         student_role = discord.utils.get(ctx.guild.roles, name='Student')
         quizzer_role = discord.utils.get(ctx.guild.roles, name='Quizzer')
@@ -290,9 +296,10 @@ class Restoration(commands.Cog):
 
         bot_role = discord.utils.get(ctx.guild.roles, name=bot_role_name)
         await admin_role.edit(permissions=discord.Permissions(permissions=8), reason="Give admin rights to admin role.",
-                              position=bot_role.position-1)
+                              position=bot_role.position - 1)
         await asyncio.sleep(1)
-        await mod_role.edit(permissions=discord.Permissions(permissions=1237328006), reason="Give mod rights to mod role.")
+        await mod_role.edit(permissions=discord.Permissions(permissions=1237328006),
+                            reason="Give mod rights to mod role.")
         await asyncio.sleep(1)
         await everyone_role.edit(permissions=discord.Permissions(permissions=70635201), reason="Set default role.")
         await asyncio.sleep(1)
@@ -346,6 +353,12 @@ class Restoration(commands.Cog):
         await vn_channel.set_permissions(everyone_role, send_messages=False)
         await asyncio.sleep(1)
         await vn_channel.set_permissions(vn_role, send_messages=True)
+        await asyncio.sleep(1)
+
+        manga_channel = discord.utils.get(ctx.guild.channels, name='manga')
+        await manga_channel.set_permissions(everyone_role, send_messages=False)
+        await asyncio.sleep(1)
+        await manga_channel.set_permissions(manga_role, send_messages=True)
         await asyncio.sleep(1)
 
         books_channel = discord.utils.get(ctx.guild.channels, name='books')
@@ -415,7 +428,7 @@ class Restoration(commands.Cog):
         emoji_directories = ["data/emojis/level_0/", "data/emojis/level_1/", "data/emojis/level_2/"]
         for directory in emoji_directories:
             for filename in os.listdir(directory):
-                with open(f"{directory+filename}", 'rb') as emoji_file:
+                with open(f"{directory + filename}", 'rb') as emoji_file:
                     emoji_image = emoji_file.read()
                     await ctx.guild.create_custom_emoji(name=filename, image=emoji_image)
                     emoji_count += 1
@@ -423,7 +436,6 @@ class Restoration(commands.Cog):
                 if emoji_count >= ctx.guild.emoji_limit:
                     await ctx.send("Added maximum amount of emojis. Exiting.")
                     return
-
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -458,11 +470,28 @@ class Restoration(commands.Cog):
         await message.pin()
         await asyncio.sleep(1)
 
-        welcome_channel = discord.utils.get(ctx.guild.channels, name='welcome')
-        reactions_message = await welcome_channel.send(reactions_string)
-
         book_channel = discord.utils.get(ctx.guild.channels, name='books')
         book_leaderboard_message = await book_channel.send("Book Leaderboard Placeholder")
+
+        with open(f"cogs/guild_data.json") as json_file:
+            data_dict = json.load(json_file)
+
+        data_dict["book_leaderboard_message"] = book_leaderboard_message.id
+
+        with open(f'cogs/guild_data.json', 'w') as json_file:
+            json.dump(data_dict, json_file)
+
+        await self.create_react_message(ctx)
+
+        welcome_channel = discord.utils.get(ctx.guild.channels, name='welcome')
+        await welcome_channel.send(invite_link_message)
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def create_react_message(self, ctx):
+
+        welcome_channel = discord.utils.get(ctx.guild.channels, name='welcome')
+        reactions_message = await welcome_channel.send(reactions_string)
 
         for emoji_string in reaction_emojis:
             await asyncio.sleep(1)
@@ -472,12 +501,9 @@ class Restoration(commands.Cog):
             data_dict = json.load(json_file)
 
         data_dict["reactions_message_id"] = reactions_message.id
-        data_dict["book_leaderboard_message"] = book_leaderboard_message.id
 
         with open(f'cogs/guild_data.json', 'w') as json_file:
             json.dump(data_dict, json_file)
-
-        await welcome_channel.send(invite_link_message)
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -585,7 +611,8 @@ class Restoration(commands.Cog):
                 print("Member is unranked. Skipping.")
                 continue
 
-            roles_to_restore = [discord.utils.get(ctx.guild.roles, name=role) for role in rolesdict[str_member_id] if role not in illegal_roles and role in guild_roles]
+            roles_to_restore = [discord.utils.get(ctx.guild.roles, name=role) for role in rolesdict[str_member_id] if
+                                role not in illegal_roles and role in guild_roles]
             if set(rolesdict[str_member_id]) & set(rank_roles):
                 member = ctx.guild.get_member(int(str_member_id))
                 if member:
@@ -673,6 +700,7 @@ class Restoration(commands.Cog):
             data_dict["join_quiz_2_id"] = discord.utils.get(ctx.guild.channels, name='join-quiz2').id
             data_dict["bump_channel_id"] = discord.utils.get(ctx.guild.channels, name='bump').id
             data_dict["elite_mod_channel_id"] = discord.utils.get(ctx.guild.channels, name='elite-mod').id
+            data_dict["manga_channel_id"] = discord.utils.get(ctx.guild.channels, name='manga').id
 
             # Role ids
             unranked_role_id = discord.utils.get(ctx.guild.roles, name='農奴 / Unranked').id
@@ -780,23 +808,28 @@ class Restoration(commands.Cog):
 
             for member_id in saved_member_ids:
                 member = backup_guild.get_member(member_id)
-                roles_already_given = [role for role in member.roles if role.name != 'Server Booster' and role.name != '農奴 / Unranked' and role.name != "@everyone"]
-                roles_saved = [discord.utils.get(backup_guild.roles, name=role_string) for role_string in rolesdict[str(member_id)]]
+                roles_already_given = [role for role in member.roles if
+                                       role.name != 'Server Booster' and role.name != '農奴 / Unranked' and role.name != "@everyone"]
+                roles_saved = [discord.utils.get(backup_guild.roles, name=role_string) for role_string in
+                               rolesdict[str(member_id)]]
                 roles_saved = [role for role in roles_saved if role is not None]
                 illegal_roles = ["Admin", "Mod", "Muted", "Server Booster", "Emoji"]
-                roles_to_give = [role for role in roles_saved if role not in roles_already_given and role.name not in illegal_roles]
+                roles_to_give = [role for role in roles_saved if
+                                 role not in roles_already_given and role.name not in illegal_roles]
                 roles_to_remove = [role for role in roles_already_given if role not in roles_saved]
 
                 if roles_to_give:
                     await asyncio.sleep(1)
                     await member.add_roles(*roles_to_give)
                     await asyncio.sleep(1)
-                    await announce_channel.send(f"Gave {', '.join([role.name for role in roles_to_give])} to {str(member)}")
+                    await announce_channel.send(
+                        f"Gave {', '.join([role.name for role in roles_to_give])} to {str(member)}")
                 if roles_to_remove:
                     await asyncio.sleep(1)
                     await member.remove_roles(*roles_to_remove)
                     await asyncio.sleep(1)
-                    await announce_channel.send(f"Removed {', '.join([role.name for role in roles_to_remove])} from {str(member)}")
+                    await announce_channel.send(
+                        f"Removed {', '.join([role.name for role in roles_to_remove])} from {str(member)}")
 
             # Make sure everyone has one rank role.
             unranked_role = discord.utils.get(backup_guild.roles, name='農奴 / Unranked')
@@ -836,7 +869,6 @@ class Restoration(commands.Cog):
             await asyncio.sleep(1)
             await emoji_asset[1].save(f"data/emojis/full_backup/{emoji_asset[0]}")
         await ctx.send("Downloaded emoji.")
-
 
 
 def setup(bot):

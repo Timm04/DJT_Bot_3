@@ -20,10 +20,10 @@ class BotManager(commands.Cog):
     @commands.command(hidden=True)
     @commands.is_owner()
     async def update(self, ctx):
-        pass
-        # repo = git.Repo('Path/to/repo')
-        # repo.remotes.origin.pull()
-        # await ctx.send("Done.")
+        """Pull update to ubuntu server."""
+        repo = git.Repo('/home/ubuntu/djt_bot_3')
+        repo.remotes.origin.pull()
+        await ctx.send("Pulled updated.")
 
 def setup(bot):
     bot.add_cog(BotManager(bot))

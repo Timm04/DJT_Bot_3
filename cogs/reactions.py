@@ -36,6 +36,7 @@ class Reactions(commands.Cog):
         self.myguild = self.bot.get_guild(guild_id)
         self.vnreadingrole = discord.utils.get(self.myguild.roles, name='VN Challenge')
         self.bookclubrole = discord.utils.get(self.myguild.roles, name='Book Club')
+        self.manga_role = discord.utils.get(self.myguild.roles, name="Manga Club")
         self.streamrole = discord.utils.get(self.myguild.roles, name='Reading Stream')
         self.conversationrole = discord.utils.get(self.myguild.roles, name='Conversation')
         self.movierole = discord.utils.get(self.myguild.roles, name='Movie')
@@ -119,6 +120,9 @@ class Reactions(commands.Cog):
             elif str(rawevent.emoji) == "⭐":
                 await reaction_member.add_roles(self.eventrole)
                 await private_channel.send(f"{reaction_member.mention} You got the event role!")
+            elif str(rawevent.emoji) == "🥭":
+                await reaction_member.add_roles(self.manga_role)
+                await private_channel.send(f"{reaction_member.mention} You got the manga club role!")
             else:
                 react_channel = discord.utils.get(self.myguild.channels, name='welcome')
                 reaction_message = await react_channel.fetch_message(role_assignment_message_id)
@@ -154,6 +158,9 @@ class Reactions(commands.Cog):
             elif str(rawevent.emoji) == "⭐":
                 await reaction_member.remove_roles(self.eventrole)
                 await private_channel.send(f"{reaction_member.mention} You lost the event role.")
+            elif str(rawevent.emoji) == "🥭":
+                await reaction_member.remove_roles(self.manga_role)
+                await private_channel.send(f"{reaction_member.mention} You lost the manga club role!")
 
 def setup(bot):
     bot.add_cog(Reactions(bot))
