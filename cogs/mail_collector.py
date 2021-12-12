@@ -36,5 +36,18 @@ class MailCollector(commands.Cog):
             await ctx.send("This is not a valid email.")
             return
 
+    @commands.command()
+    async def removemail(self, ctx):
+        """Remove your email from the DJT newsletter."""
+        user_id = str(ctx.author.id)
+        mail_dict = self.pull_all_records()
+        if user_id in mail_dict:
+            del mail_dict[user_id]
+            self.push_all_records(mail_dict)
+            await ctx.send("You were removed from the DJT email list.")
+        else:
+            await ctx.send("Your email is not registered.")
+            return
+
 def setup(bot):
     bot.add_cog(MailCollector(bot))
