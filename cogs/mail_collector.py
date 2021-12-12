@@ -28,7 +28,7 @@ class MailCollector(commands.Cog):
         """Add your email to the DJT newsletter. Great deals like the DJT Japanese Pro Deck for $500/month."""
         user_id = str(ctx.author.id)
         mail_dict = self.pull_all_records()
-        if self.mail_re.match(mail):
+        if self.mail_re.match(mail.lower()):
             mail_dict[user_id] = mail
             self.push_all_records(mail_dict)
             await ctx.send("Added your mail to the newsletter")
