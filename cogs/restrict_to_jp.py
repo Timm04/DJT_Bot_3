@@ -1,0 +1,88 @@
+"""Language Restriction"""
+import urllib.error
+
+import discord
+from discord.ext import commands
+from textblob import TextBlob
+import json
+import asyncio
+import re
+
+with open(f"cogs/guild_data.json") as json_file:
+    data_dict = json.load(json_file)
+    guild_id = data_dict["guild_id"]
+
+
+class LanguageDetect(commands.Cog):
+
+    def __init__(self, bot):
+        self.bot = bot
+        self.active = False
+        self.remove_res = [re.compile(r'<:\w+:\d+>'), re.compile(r'<@!?\d+>')]
+
+    async def format_message(self, message: discord.Message):
+        allowed_messages = ["ｗｗｗ", "ｗｗ"]
+        restricted_channel_names = ["otaku", "elite-otaku", "offtopic", "nihongo", "vn", "books", "manga",
+                                   "beginner-questions"]
+
+        new_message = message.content
+        for regexp in self.remove_res:
+            new_message = regexp.sub('', new_message)
+
+        for text in allowed_messages:
+            new_message = new_message.replace(text, '')
+
+        for command in self.bot.commands:
+            new_message = new_message.replace('$' + command.name, '')
+
+        if message.guild.id != guild_id:
+            return False
+        elif message.channel.name not in restricted_channel_names:
+            return False
+        elif len(new_message) < 3:
+            return False
+        elif new_message.isnumeric():
+            return
+        else:
+            return new_message
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        if message.author.id == 902684355720257606 or not self.active:
+            return
+        check_message = await self.format_message(message)
+        if check_message:
+            allowed_languages = ["ja", "zh-CN"]
+            my_textblob = TextBlob(message.content.strip())
+            try:
+                language = my_textblob.detect_language()
+                await asyncio.sleep(1)
+            except urllib.error.HTTPError:
+                print("Broken message:", message.content)
+                return
+            if language not in allowed_languages:
+                print(f"'{message.content}' deleted. Language: {language}")
+                await asyncio.sleep(1)
+                await message.delete()
+                await asyncio.sleep(1)
+                await message.channel.send(f"{message.author.mention} 外国語は禁止です！　日本語でお願いしますね　：）。 ")
+                return
+            else:
+                return
+
+    @commands.Cog.listener()
+    async def on_message_edit(self, message_before: discord.Message, message_after : discord.Message):
+        await self.on_message(message_after)
+
+    @commands.command(hidden=True)
+    @commands.is_owner()
+    async def toggle(self, ctx):
+        if self.active:
+            self.active = False
+            await ctx.send("Deactivated language block.")
+        else:
+            self.active = True
+            await ctx.send("Activated language block.")
+
+def setup(bot):
+    bot.add_cog(LanguageDetect(bot))
