@@ -46,28 +46,35 @@ class MangaClub(commands.Cog):
         """
         Send messages to the manga channel showing the entire leaderboard every 24 hours.
         """
-        if self.first_iteration:
-            self.first_iteration = False
-            return
-        # unpin old bot messages
         pins = await self.manga_channel.pins()
+        old_pins = []
         for old_pin in pins:
             if old_pin.author.id == self.bot.user.id:
-                await old_pin.unpin()
+                old_pins.append(old_pin)
 
         # send new leaderboard and pin it
         manga_dict = self.pull_all_records()
-        new_pins = []
         msg = ''
+        new_pins = []
+        message_count = 0
         for rank, (user_id, record) in enumerate(sorted(manga_dict.items(), key=lambda x: x[1]['score'], reverse=True)):
             msg += f'{rank+1}. <@!{user_id}> : {record["score"]} volumes read\n'
             if len(msg) > 1800:
-                new_pins.append(await self.manga_channel.send(msg))
+                try:
+                    await old_pins[message_count].edit(content=msg)
+                except IndexError:
+                    new_pins.append(await self.manga_channel.send(msg))
+                message_count += 1
                 msg = ''
         if msg:
-            new_pins.append(await self.manga_channel.send(msg))
-        for m in new_pins[::-1]:
-            await m.pin()
+            try:
+                await old_pins[message_count].edit(content=msg)
+            except IndexError:
+                new_pins.append(await self.manga_channel.send(msg))
+
+        if new_pins:
+            for m in new_pins[::-1]:
+                await m.pin()
 
     def set_monthly_volumes(self, user_record, vol_count):
         last_update = datetime.fromtimestamp(user_record['last_update']['time'])
