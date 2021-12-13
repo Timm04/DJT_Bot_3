@@ -18,14 +18,14 @@ class LanguageDetect(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.active = False
-        self.remove_res = [re.compile(r'<:\w+:\d+>'), re.compile(r'<@!?\d+>')]
+        self.remove_res = [re.compile(r'<#\d+>'), re.compile(r'<:\w+:\d+>'), re.compile(r'<@!?\d+>'), re.compile(r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)')]
 
     async def format_message(self, message: discord.Message):
-        allowed_messages = ["ｗｗｗ", "ｗｗ"]
+        allowed_messages = ["ｗｗｗ", "ｗｗ", "www", "ww"]
         restricted_channel_names = ["otaku", "elite-otaku", "offtopic", "nihongo", "vn", "books", "manga",
                                    "beginner-questions"]
 
-        new_message = message.content
+        new_message = message.content.strip().replace("\n", "")
         for regexp in self.remove_res:
             new_message = regexp.sub('', new_message)
 
@@ -35,9 +35,13 @@ class LanguageDetect(commands.Cog):
         for command in self.bot.commands:
             new_message = new_message.replace('$' + command.name, '')
 
-        if message.guild.id != guild_id:
+        try:
+            if message.guild.id != guild_id:
+                return False
+        except AttributeError:
             return False
-        elif message.channel.name not in restricted_channel_names:
+
+        if message.channel.name not in restricted_channel_names:
             return False
         elif len(new_message) < 3:
             return False
