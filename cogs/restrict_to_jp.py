@@ -65,15 +65,14 @@ class LanguageDetect(commands.Cog):
                 print("Broken message:", message.content)
                 return
             # Eidan Eigo-Sibari
-            if message.author.id == 527476475042070528:
-                if language is not "en":
-                    print(f"'{message.content}' deleted by Eidan. Language: {language}")
-                    await asyncio.sleep(1)
-                    await message.delete()
-                    await asyncio.sleep(1)
-                    await message.channel.send(f"{message.author.mention} You must speak in English.")
-                    return
-            elif language not in allowed_languages:
+            if message.author.id == 527476475042070528 and language != 'en':
+                print(f"'{message.content}' deleted by Eidan. Language: {language}")
+                await asyncio.sleep(1)
+                await message.delete()
+                await asyncio.sleep(1)
+                await message.channel.send(f"{message.author.mention} You must speak in English.")
+                return
+            elif language not in allowed_languages and message.author.id != 527476475042070528:
                 print(f"'{message.content}' deleted. Language: {language}")
                 await asyncio.sleep(1)
                 await message.delete()
