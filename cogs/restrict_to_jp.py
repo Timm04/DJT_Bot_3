@@ -21,7 +21,7 @@ class LanguageDetect(commands.Cog):
         self.remove_res = [re.compile(r'<#\d+>'), re.compile(r'<:\w+:\d+>'), re.compile(r'<@!?\d+>'), re.compile(r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)')]
 
     async def format_message(self, message: discord.Message):
-        allowed_messages = ["ｗｗｗ", "ｗｗ", "www", "ww"]
+        allowed_messages = ["ｗｗｗ", "ｗｗ", "www", "ww", "orz"]
         restricted_channel_names = ["otaku", "elite-otaku", "offtopic", "nihongo", "vn", "books", "manga",
                                    "beginner-questions"]
 
@@ -64,7 +64,16 @@ class LanguageDetect(commands.Cog):
             except urllib.error.HTTPError:
                 print("Broken message:", message.content)
                 return
-            if language not in allowed_languages:
+            # Eidan Eigo-Sibari
+            if message.author.id == 527476475042070528:
+                if language is not "en":
+                    print(f"'{message.content}' deleted by Eidan. Language: {language}")
+                    await asyncio.sleep(1)
+                    await message.delete()
+                    await asyncio.sleep(1)
+                    await message.channel.send(f"{message.author.mention} You must speak in English.")
+                    return
+            elif language not in allowed_languages:
                 print(f"'{message.content}' deleted. Language: {language}")
                 await asyncio.sleep(1)
                 await message.delete()
