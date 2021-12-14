@@ -18,10 +18,11 @@ class LanguageDetect(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.active = False
-        self.remove_res = [re.compile(r'<#\d+>'), re.compile(r'<:\w+:\d+>'), re.compile(r'<@!?\d+>'),
+        self.remove_res = [re.compile(r'<#\d+>'), re.compile(r'<a?:\w+:\d+>'), re.compile(r'<@!?\d+>'),
                            re.compile(r'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)'),
                            re.compile(u'\U0001F600-\U0001F64F'), re.compile(u'\U0001F300-\U0001F5FF'),
-                           re.compile(u'\U0001F680-\U0001F6FF'), re.compile(u'\U0001F1E0-\U0001F1FF')]
+                           re.compile(u'\U0001F680-\U0001F6FF'), re.compile(u'\U0001F1E0-\U0001F1FF'),
+                           re.compile(u'\U00002600-\U000026FF')]
 
     async def format_message(self, message: discord.Message):
         allowed_messages = ["ｗｗｗ", "ｗｗ", "www", "ww", "orz"]
