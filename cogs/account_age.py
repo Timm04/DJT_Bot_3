@@ -30,22 +30,25 @@ class AccountAge(commands.Cog):
 
         if message.guild:
             time_since_account_creation = datetime.now() - message.author.created_at
-            if time_since_account_creation.days < 30 and message.attachments:
+            time_since_joined = datetime.now() - message.author.created_at
+            if time_since_account_creation.days < 30 and time_since_joined.days < 7 and message.attachments:
 
                 await message.delete()
                 await asyncio.sleep(1)
 
                 await self.log_channel.send(f"{self.mod_role.mention} The user `{message.author.name}` with the ID `{message.author.id}` just "
                                             f"tried to post these images. If it's explicit please ban him. (This "
-                                            f"message was sent due to the relevant account being younger than 30 days)."
+                                            f"message was sent due to the relevant account being younger than 30 days "
+                                            f"or having joined less than 7 days ago). "
                                             f"\nYou can ban people with their id like this for example:\n"
-                                            f"`?ban 520876114093146113 Scat Posting`")
+                                            f"`?ban {message.author.id} Scat Posting`")
 
                 await asyncio.sleep(1)
                 await message.author.create_dm()
                 private_channel = message.author.dm_channel
                 await asyncio.sleep(1)
-                await private_channel.send("Your account has to be at least 30 days old before you can send images.")
+                await private_channel.send("Your account does not have image privileges. Please spend more time on "
+                                           "the server first.")
 
 def setup(bot):
     bot.add_cog(AccountAge(bot))
