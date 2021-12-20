@@ -30,7 +30,7 @@ class AccountAge(commands.Cog):
 
         if message.guild:
             time_since_account_creation = datetime.now() - message.author.created_at
-            if time_since_account_creation.days > 30 and message.attachments:
+            if time_since_account_creation.days < 30 and message.attachments:
 
                 await message.delete()
                 await asyncio.sleep(1)
