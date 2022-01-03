@@ -18,11 +18,19 @@ class NotablePosts(commands.Cog):
         self.added_message_ids = dict()
 
     async def count_reactions(self, reaction_message):
-        total_count = 0
+        post_qualifies = False
         for reaction in reaction_message.reactions:
-            total_count += reaction.count
-        if total_count >= 16:
-            return total_count
+            if reaction.count >= 10:
+                post_qualifies = True
+
+        if post_qualifies:
+            total_count = 0
+            for reaction in reaction_message.reactions:
+                total_count += reaction.count
+            if total_count >= 16:
+                return total_count
+            else:
+                return False
         else:
             return False
 
@@ -54,6 +62,7 @@ class NotablePosts(commands.Cog):
         myembed = await self.create_embed(reaction_message)
         if new_reaction_count - old_reaction_count >= 5:
             await log_message.edit(embed=myembed)
+            self.added_message_ids[reaction_message.id] = (log_message, new_reaction_count)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user):
