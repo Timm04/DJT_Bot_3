@@ -63,7 +63,7 @@ bot_ids = {
 }
 
 user_ids = {
-    "QM": 520876114093146113,
+    "QM": 659876763652063282,
     "nullposter": 182138235206631434
 }
 
@@ -154,7 +154,7 @@ Other resources can be found on my site <https://anacreondjt.gitlab.io/>
 and on the tmw's resource page <https://rentry.co/japanese_resources>
 stegatxins0 wrote a really in-depth advanced anki mining guide that more advanced learner's may find helpful <https://rentry.co/mining>"""
 
-bot_role_name = "究極の絶対秘神"
+bot_role_name = "幽人の庭師"
 
 
 class Restoration(commands.Cog):

@@ -10,12 +10,12 @@ class NotablePosts(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.added_message_ids = dict()
 
     @commands.Cog.listener()
     async def on_ready(self):
         self.myguild = self.bot.get_guild(guild_id)
         self.log_channel = discord.utils.get(self.myguild.channels, name="notable-posts")
-        self.added_message_ids = dict()
 
     async def count_reactions(self, reaction_message):
         post_qualifies = False
@@ -54,10 +54,11 @@ class NotablePosts(commands.Cog):
     async def create_message(self, reaction_message, reaction_count):
         myembed = await self.create_embed(reaction_message)
         log_message = await self.log_channel.send(embed=myembed)
-        self.added_message_ids[reaction_message.id] = (log_message, reaction_count)
+        self.added_message_ids[reaction_message.id] = (log_message.id, reaction_count)
 
     async def edit_message(self, reaction_message, log_message_count, new_reaction_count):
-        log_message = log_message_count[0]
+        log_message_id = log_message_count[0]
+        log_message = await self.log_channel.fetch_message(log_message_id)
         old_reaction_count = log_message_count[1]
         myembed = await self.create_embed(reaction_message)
         if new_reaction_count - old_reaction_count >= 5:

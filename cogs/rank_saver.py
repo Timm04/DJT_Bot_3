@@ -18,8 +18,7 @@ class RankSaver(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        pass
-        # self.rank_saver.start()
+        self.rank_saver.start()
 
     @tasks.loop(minutes=10.0)
     async def rank_saver(self):
@@ -33,6 +32,7 @@ class RankSaver(commands.Cog):
 
         all_members = [member for member in to_save_server.members if member.bot is False]
         for member in all_members:
+            print(f'Saving role for {str(member)}')
             member_roles = [str(role) for role in member.roles if
                             role.name != "@everyone" and role.name != '農奴 / Unranked' and role.name != "Server Booster"]
             user_dict[str(member.id)] = member_roles
