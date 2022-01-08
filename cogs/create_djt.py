@@ -166,7 +166,8 @@ class Restoration(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.sync_roles_new.start()
+        pass
+        # self.sync_roles_new.start()
 
     @commands.command(hidden=True)
     @commands.is_owner()
