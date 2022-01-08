@@ -1,3 +1,5 @@
+import asyncio
+
 import discord
 from discord.ext import commands
 import json
@@ -52,6 +54,8 @@ class NotablePosts(commands.Cog):
         return myembed
 
     async def create_message(self, reaction_message, reaction_count):
+        # Store value to avoid race condition
+        self.added_message_ids[reaction_message.id] = True
         myembed = await self.create_embed(reaction_message)
         log_message = await self.log_channel.send(embed=myembed)
         self.added_message_ids[reaction_message.id] = (log_message.id, reaction_count)
