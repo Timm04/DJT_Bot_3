@@ -54,7 +54,10 @@ class ErrorHandler(commands.Cog):
             for role in member.roles:
                 if role.id in quizranks:
                     # String is cut down for easy copy and paste.
-                    currentcommand = re.search(r"`(.*)`", mycommands[role.id]).group(1)
+                    try:
+                        currentcommand = re.search(r"`(.*)`", mycommands[role.id]).group(1)
+                    except AttributeError:
+                        await ctx.send("You have reached the highest level.")
                     await ctx.send(currentcommand)
             return
 
