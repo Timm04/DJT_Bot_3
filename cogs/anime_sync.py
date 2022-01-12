@@ -134,7 +134,7 @@ class AnimeCog(commands.Cog):
             await ctx.send("Please use this command in the 'search-request' channel. Thank you.")
             return
 
-        await ctx.send(F"Searching for: `{japanese_input}`")
+        await ctx.send(F"Searching for your Japanese input :)")
         results = []
         foundindex = 0
         for filename, subdata in self.subtitle_data:
