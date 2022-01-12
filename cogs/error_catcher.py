@@ -39,7 +39,7 @@ class ErrorHandler(commands.Cog):
             await ctx.send(f"Missing the following argument: {error.param}")
             return
         elif isinstance(error, commands.errors.CommandNotFound):
-            await ctx.send(f"Command `{ctx.message.content}` not found.")
+            await ctx.send(f"That command was not found.")
             return
         elif isinstance(error, commands.errors.PrivateMessageOnly):
             await ctx.send(f"Please use this command in PM!")
