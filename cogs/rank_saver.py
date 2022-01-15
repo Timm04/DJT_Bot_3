@@ -32,7 +32,6 @@ class RankSaver(commands.Cog):
 
         all_members = [member for member in to_save_server.members if member.bot is False]
         for member in all_members:
-            print(f'Saving role for {str(member)}')
             member_roles = [str(role) for role in member.roles if
                             role.name != "@everyone" and role.name != '農奴 / Unranked' and role.name != "Server Booster"]
             user_dict[str(member.id)] = member_roles
