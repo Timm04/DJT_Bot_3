@@ -194,7 +194,7 @@ class BumpCog(commands.Cog):
             self.starterindex = 2
 
         elif self.starterindex == 2:
-            await self.msg_channel.send(f"{self.bumprole.mention} Bump now with `!d bump`")
+            await self.msg_channel.send(f"Bump now with `!d bump`")
             self.starterindex = 0
             self.idlewaiter.start()
             self.startwaiter.cancel()
