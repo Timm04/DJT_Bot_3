@@ -559,33 +559,6 @@ class Restoration(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.is_owner()
-    async def create_bump_messages(self, ctx):
-
-        # https://pastebin.com/sKYwGbav Disboard message.
-
-        with open(f"cogs/guild_data.json") as json_file:
-            data_dict = json.load(json_file)
-
-        bump_channel = discord.utils.get(ctx.guild.channels, name='bump')
-
-        leaderboard_1 = await bump_channel.send("leaderboard 1")
-        await asyncio.sleep(1)
-        leaderboard_2 = await bump_channel.send("leaderboard 2")
-        await asyncio.sleep(1)
-
-        data_dict["bump_leaderboard_1"] = leaderboard_1.id
-        data_dict["bump_leaderboard_2"] = leaderboard_2.id
-
-        await leaderboard_2.pin()
-        await asyncio.sleep(1)
-        await leaderboard_1.pin()
-        await asyncio.sleep(1)
-
-        with open(f'cogs/guild_data.json', 'w') as json_file:
-            json.dump(data_dict, json_file)
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
     async def give_everyone_unranked_role(self, ctx):
         unranked_role = discord.utils.get(ctx.guild.roles, name='農奴 / Unranked')
         all_members = [member for member in ctx.guild.members if member.bot is False]
@@ -660,9 +633,6 @@ class Restoration(commands.Cog):
 
                 await self.create_vn_messages(ctx)
                 await ctx.send("Finished creating VN messages.")
-
-                await self.create_bump_messages(ctx)
-                await ctx.send("Finished creating bump messages.")
 
                 await self.write_ids(ctx)
                 await ctx.send("Wrote ids to json file.")

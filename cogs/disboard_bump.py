@@ -13,12 +13,11 @@ from datetime import timedelta
 
 #############################################################
 # Variables (Temporary)
+# https://pastebin.com/sKYwGbav Disboard message.
 with open(f"cogs/guild_data.json") as json_file:
     data_dict = json.load(json_file)
     guild_id = data_dict["guild_id"]
     bump_channel_id = data_dict["bump_channel_id"]
-    leaderboard_message_id = data_dict["bump_leaderboard_1"]
-    leaderboard_message_id_2 = data_dict["bump_leaderboard_2"]
     bumper_role = data_dict["bumper_role_id"]
 #############################################################
 
@@ -78,24 +77,31 @@ class BumpCog(commands.Cog):
 
         self.s3_client.upload_file('data/bumpleaderboard.json', "djtbot", 'bumping/bumpleaderboard.json')
 
-        leaderboard_message = await self.msg_channel.fetch_message(leaderboard_message_id)
-        leaderboard_message_2 = await self.msg_channel.fetch_message(leaderboard_message_id_2)
-        messages = [leaderboard_message, leaderboard_message_2]
+        pins = await self.msg_channel.pins()
+        old_pins = []
+        for old_pin in pins:
+            if old_pin.author.id == self.bot.user.id:
+                old_pins.append(old_pin)
 
-        leaderboard_messages = ["Bump leaderboard:"]
+        leaderboard_message = ["Bump leaderboard:"]
         edit_index = 0
+        new_pins = []
         sorted_users = sorted(leaderboard_dict, key=leaderboard_dict.get, reverse=True)
-        for index, myuserid in enumerate(sorted_users):
+        for index, current_userid in enumerate(sorted_users):
             position = index + 1
-            userline = f"{position}. <@!{myuserid}> with {leaderboard_dict[myuserid]} bumps."
-            leaderboard_messages.append(userline)
-            if len("\n".join(leaderboard_messages)) > 1800:
-                await messages[edit_index].edit(content="\n".join(leaderboard_messages))
+            userline = f"{position}. <@!{current_userid}> with {leaderboard_dict[current_userid]} bumps."
+            leaderboard_message.append(userline)
+            if len("\n".join(leaderboard_message)) > 1800:
+                try:
+                    await old_pins[edit_index].edit(content="\n".join(leaderboard_message))
+                except IndexError:
+                    new_pins.append(await self.msg_channel.send("\n".join(leaderboard_message)))
                 edit_index += 1
-                leaderboard_messages = []
+                leaderboard_message = []
 
-        leaderboard_string = "\n".join(leaderboard_messages)
-        await messages[edit_index].edit(content=leaderboard_string)
+        if new_pins:
+            for message in new_pins[::-1]:
+                await message.pin()
 
         if userid:
             await self.msg_channel.send(f"Thanks for bumping <@!{userid}>. \n"
@@ -172,7 +178,6 @@ class BumpCog(commands.Cog):
 
         elif self.bumperindex == 1:
             await self.msg_channel.send(f"{self.bumprole.mention} Bump now with `!d bump`")
-            self.bumperindex == 0
             self.idlewaiter.start()
             self.bumpwaiter.cancel()
 
@@ -205,7 +210,7 @@ class BumpCog(commands.Cog):
         elif self.waiterindex == 1:
             self.waiterindex = 2
         elif self.waiterindex == 2:
-            await self.msg_channel.send(f"{self.bumprole.mention} Bump now with `!d bump`")
+            await self.msg_channel.send(f"Bump now with `!d bump`")
             self.waiterindex = 0
             self.idlewaiter.start()
             self.waitminuteswaiter.cancel()
@@ -218,7 +223,12 @@ class BumpCog(commands.Cog):
             self.time_idled = 0
         elif self.idleindex == 1:
             self.time_idled += 2
-            await self.msg_channel.send(f"Idled for {self.time_idled} minutes. Bump now with `!d bump`")
+            if self.time_idled < 20:
+                await self.msg_channel.send(f"Idled for {self.time_idled} minutes. Bump now with `!d bump`")
+            if self.time_idled == 20:
+                await self.msg_channel.send(f"{self.bumprole.mention} Idled for {self.time_idled} minutes. Bump now with `!d bump`")
+            if self.time_idled > 20:
+                await self.msg_channel.send(f"Idled for {self.time_idled} minutes. Bump now with `!d bump`")
 
 def setup(bot):
     bot.add_cog(BumpCog(bot))
