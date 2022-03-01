@@ -116,9 +116,11 @@ class EmojiManagement(commands.Cog):
                     return
                 elif not max_emoji_reached:
                     await log_channel.send(f"**{performing_member}** just created the emoji **{emoji_created.name}** ({10-len(user_owned_emoji)}/10 slots left).")
+                    return
                 else:
                     await log_channel.send(f"**{performing_member}** just tried to create the emoji **{emoji_created.name}** but their maximum slots were reached.")
                     await emoji_created.delete()
+                    return
 
     async def blacklist_member(self, member):
         log_channel = discord.utils.get(self.myguild.channels, name="otaku")
