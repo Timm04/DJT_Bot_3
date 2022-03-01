@@ -131,6 +131,9 @@ class NickName(commands.Cog):
         except discord.errors.Forbidden:
             await ctx.send("You cannot have a nickname role.")
             self.delete_nick_record(user_id)
+        except AttributeError:
+            await ctx.send("Please use this command inside the server.")
+            return
 
         await ctx.send("Changed nickname.")
 

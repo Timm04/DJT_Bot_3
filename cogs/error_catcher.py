@@ -25,7 +25,6 @@ class ErrorHandler(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.myguild = self.bot.get_guild(guild_id)
-
         admin_user = self.myguild.get_member(admin_user_id)
         await admin_user.create_dm()
         self.private_admin_channel = admin_user.dm_channel
@@ -39,7 +38,6 @@ class ErrorHandler(commands.Cog):
             await ctx.send(f"Missing the following argument: {error.param}")
             return
         elif isinstance(error, commands.errors.CommandNotFound):
-            await ctx.send(f"That command was not found.")
             return
         elif isinstance(error, commands.errors.PrivateMessageOnly):
             await ctx.send(f"Please use this command in PM!")
