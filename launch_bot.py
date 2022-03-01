@@ -3,7 +3,6 @@
 import discord
 from discord.ext import commands
 import os
-import boto3
 
 intents = discord.Intents.default()
 intents.typing = False
@@ -14,7 +13,7 @@ djtbot = commands.Bot(command_prefix='$', intents=intents)
 @djtbot.check
 def check_guild(ctx):
     try:
-        return ctx.guild.id == 862488397371932672 # Current guild id
+        return ctx.guild.id == 929164771784290324 # Current guild id
     except AttributeError:
         return True
 
@@ -24,9 +23,6 @@ for filename in os.listdir('./cogs'):
         print(f"Loaded the following cog: {filename}")
 
 # djtbot.load_extension(f'cogs.create_djt')
-
-s3_client = boto3.client('s3')
-s3_client.download_file('newdjtbot', "token.txt", 'token.txt')
 
 with open("token.txt") as token_file:
     bot_token = token_file.read()

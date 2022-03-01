@@ -38,7 +38,7 @@ class NotablePosts(commands.Cog):
 
     async def create_embed(self, reaction_message):
         myembed = discord.Embed(description=f"[Jump To Message]({reaction_message.jump_url})")
-        myembed.set_author(name=str(reaction_message.author), icon_url=str(reaction_message.author.avatar_url))
+        myembed.set_author(name=str(reaction_message.author), icon_url=str(reaction_message.author.avatar.url))
 
         if reaction_message.content:
             myembed.add_field(name="Content:", value=reaction_message.content, inline=False)
@@ -61,6 +61,7 @@ class NotablePosts(commands.Cog):
         self.added_message_ids[reaction_message.id] = (log_message.id, reaction_count)
 
     async def edit_message(self, reaction_message, log_message_count, new_reaction_count):
+        await asyncio.sleep(1)
         log_message_id = log_message_count[0]
         log_message = await self.log_channel.fetch_message(log_message_id)
         old_reaction_count = log_message_count[1]

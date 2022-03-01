@@ -20,7 +20,7 @@ class MyHelpCommand(commands.MinimalHelpCommand):
         if commands:
             lines = []
             for command in commands:
-                commandline = f"`{self.clean_prefix}{command.name}` {command.help}"
+                commandline = f"`${command.name}` {command.help}"
                 lines.append(commandline)
 
             joined = '\n'.join(lines)
@@ -32,7 +32,7 @@ class MyHelpCommand(commands.MinimalHelpCommand):
     def get_command_signature(self, command):
         return None
 
-class BasicSetup(commands.Cog):
+class HelpInfo(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -49,4 +49,4 @@ class BasicSetup(commands.Cog):
         print(f"Running pycord version: {discord.__version__}")
 
 def setup(bot):
-    bot.add_cog(BasicSetup(bot))
+    bot.add_cog(HelpInfo(bot))

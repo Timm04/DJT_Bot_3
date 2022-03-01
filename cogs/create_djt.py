@@ -26,7 +26,6 @@ import os
 
 djt_channels = {
     "GENERAL": [("otaku", "Japanese language and otaku media related chat."),
-                ("elite-otaku", "少数精鋭"),
                 ("nihongo", "Chat in Japanese"),
                 ("offtopic", "real life, blogposts, travel, and others"),
                 ("artwork", "Wholesome SFW Artwork only."),
@@ -34,13 +33,14 @@ djt_channels = {
                        "pins for ongoing votes and the leaderboard."),
                 ("books", "Japanese books and group reads. | To write here react to the message in #welcome."),
                 ("manga", "Channel for the manga club."),
-                ("djt-radio", "Post or talk about music."),
-                ("public-apology", "Channel in which punished users can ask for forgiveness.")],
+                ("event", "Channel for special occasions"),
+                ("notable-posts", "High quality content.")],
 
     "OTHER": [("quiz", "k!quiz <quiz>"),
               ("quiz-solo", "Please don't interfere with other people doing the quiz."),
               ("quiz-solo2", "Please don't interfere with other people doing the quiz."),
               ("bump", "!d bump"),
+              ("djt-radio", "Post or talk about music."),
               ("vc-chat", "Voice chat text channel.")],
 
     "JOIN": [("welcome", "Welcome to DJT Discord!"),
@@ -51,8 +51,23 @@ djt_channels = {
              ("mod", "Moderator channel."),
              ("elite-mod", "$clear to empty channel. | Messages in this channel are cleared automatically after 24h.")]
 }
+
+threads = {
+    "otaku": [("Mining Thread", "Talk about things you mined"),
+              ("Seasonal Anime", "Talk about current airing shows."),
+              ("Kanken Practice", "Talk about the kanji writing, the Kanji Kentei test, the Kanken Anki deck and other related topics."),
+              ("Gacha Thread", "Talk about Gacha games.")],
+
+    "offtopic": [("Bible Study", "Reading and discussing the bible. Each week another book."),
+                 ("Linux And Programming", "Talk about alternative operating systems and programming."),
+                 ("Daily Accountability Thread", "Talk about commitments and plans and stick to them."),
+                 ("Wordle Thread", "Talk about the Wordle game")],
+
+    "vc-chat": [("vc-chat2", "Second voice channel in case of parallel discussion.")]
+}
+
 voice_channels = {
-    "OTHER": ["free-talk 64kbps", "free-talk 256kbps"]
+    "OTHER": ["free-talk 64kbps", "free-talk 256kbps", "karaoke"]
 }
 
 bot_ids = {
@@ -87,7 +102,7 @@ N3:
 N2:
 - Talk in the beginner questions room
 N1:
-- Access to the elite otaku room
+- 
 Taikou:
 - Create a custom role with a custom color
 Daiou: 
@@ -115,34 +130,6 @@ Most recent backup link always here:
 https://animecards.site/discord_backup/ 
 """
 
-threads_message = """Currently Active General Threads Overview. All threads can be revived by any user.
-
-Seasonal Anime 
-Talk about current airing shows.
-
-Mining 
-Talk about interesting and rare words that you added to Anki.
-
-Kanken Practice 
-Talk about the kanji writing, the Kanji Kentei test, the Kanken Anki deck and other related topics.
-
-Bible Study
-Reading and discussing the bible. Each week another book.
-
-Daily Accountability Thread 
-Talk about commitments and plans and stick to them.
-
-Linux & Programming 
-Talk about alternative operating systems and programming.
-
-Currently Archived:
-
-Pitch Practice
-Talk about Japanese pitch accent and learning it.
-
-vc-chat2 
-Second voice channel in case of parallel discussion."""
-
 beginner_message = """If you are a beginner follow this guide by QM (and the rest of the website):
 ＞＞ <https://animecards.site/learningjapanese/> ＜＜
 tl;dr
@@ -153,8 +140,6 @@ tl;dr
 Other resources can be found on my site <https://anacreondjt.gitlab.io/> 
 and on the tmw's resource page <https://rentry.co/japanese_resources>
 stegatxins0 wrote a really in-depth advanced anki mining guide that more advanced learner's may find helpful <https://rentry.co/mining>"""
-
-bot_role_name = "幽人の庭師"
 
 
 class Restoration(commands.Cog):
@@ -167,13 +152,11 @@ class Restoration(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         pass
-        # self.sync_roles_new.start()
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def check_for_bots(self, ctx):
         "Check if all important bots are members of the guild."
-
         on_server_bot_ids = [member.id for member in ctx.guild.members if member.bot is True]
 
         for bot_name in bot_ids:
@@ -185,7 +168,7 @@ class Restoration(commands.Cog):
         return True
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def create_channels(self, ctx):
         "Delete all channels except 'revive' and recreate them in accordance with the djt_channels variable."
 
@@ -207,8 +190,16 @@ class Restoration(commands.Cog):
                     await asyncio.sleep(1)
                     await ctx.guild.create_voice_channel(channel, category=current_category)
 
+        for channel_name in list(threads.keys()):
+            for thread_name, description in threads[channel_name]:
+                channel = discord.utils.get(ctx.guild.channels, name=channel_name)
+                await asyncio.sleep(1)
+                thread_message = await channel.send(description)
+                await asyncio.sleep(1)
+                await channel.create_thread(name=thread_name, message=thread_message)
+
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def create_roles(self, ctx):
         """Delete old roles and recreate all standard roles."""
 
@@ -216,7 +207,10 @@ class Restoration(commands.Cog):
                            not role.is_default() and not role.is_premium_subscriber() and not role.is_bot_managed()]
         for role in roles_to_delete:
             await asyncio.sleep(1)
-            await role.delete()
+            try:
+                await role.delete()
+            except discord.errors.Forbidden:
+                pass
         await ctx.send("Old roles deleted.")
 
         djt_roles = {
@@ -257,7 +251,7 @@ class Restoration(commands.Cog):
             await ctx.guild.create_role(name=role_name, colour=djt_roles[role_name])
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def update_role_and_channel_permissions(self, ctx):
         """Update permissions for roles and channels."""
         admin_role = discord.utils.get(ctx.guild.roles, name='Admin')
@@ -295,7 +289,11 @@ class Restoration(commands.Cog):
         await daiou_role.edit(hoist=True)
         await asyncio.sleep(1)
 
+        bot_role_name = "日本語"
         bot_role = discord.utils.get(ctx.guild.roles, name=bot_role_name)
+
+        pollmaster_role = discord.utils.get(ctx.guild.roles, name="Pollmaster")
+
         await admin_role.edit(permissions=discord.Permissions(permissions=8), reason="Give admin rights to admin role.",
                               position=bot_role.position - 1)
         await asyncio.sleep(1)
@@ -323,6 +321,7 @@ class Restoration(commands.Cog):
         await asyncio.sleep(1)
         await general_category.set_permissions(disboard_role, send_messages=False, add_reactions=False)
         await asyncio.sleep(1)
+        await general_category.set_permissions(pollmaster_role, read_messages=True, send_messages=True)
 
         other_category = discord.utils.get(ctx.guild.channels, name='OTHER')
         await other_category.set_permissions(unranked_role, read_messages=False)
@@ -340,21 +339,15 @@ class Restoration(commands.Cog):
         await join_category.set_permissions(muted_role, send_messages=False, add_reactions=False)
         await asyncio.sleep(1)
 
-        elite_channel = discord.utils.get(ctx.guild.channels, name='elite-otaku')
-        await elite_channel.set_permissions(everyone_role, read_messages=False)
-        await asyncio.sleep(1)
-        await elite_channel.set_permissions(n1_role, read_messages=True)
-        await asyncio.sleep(1)
-        await elite_channel.set_permissions(taikou_role, read_messages=True)
-        await asyncio.sleep(1)
-        await elite_channel.set_permissions(daiou_role, read_messages=True)
-        await asyncio.sleep(1)
-
+        vn_manager_role = discord.utils.get(ctx.guild.roles, name="VN Manager")
         vn_channel = discord.utils.get(ctx.guild.channels, name='vn')
         await vn_channel.set_permissions(everyone_role, send_messages=False)
         await asyncio.sleep(1)
         await vn_channel.set_permissions(vn_role, send_messages=True)
         await asyncio.sleep(1)
+        await vn_channel.set_permissions(pollmaster_role, read_messages=True, send_messages=True)
+        await asyncio.sleep(1)
+        await vn_channel.set_permissions(vn_manager_role, manage_channels=True, manage_messages=True)
 
         manga_channel = discord.utils.get(ctx.guild.channels, name='manga')
         await manga_channel.set_permissions(everyone_role, send_messages=False)
@@ -365,13 +358,13 @@ class Restoration(commands.Cog):
         books_channel = discord.utils.get(ctx.guild.channels, name='books')
         await books_channel.set_permissions(everyone_role, send_messages=False)
         await asyncio.sleep(1)
+        await books_channel.set_permissions(pollmaster_role, read_messages=True, send_messages=True)
+        await asyncio.sleep(1)
         await books_channel.set_permissions(book_role, send_messages=True)
         await asyncio.sleep(1)
 
-        apology_channel = discord.utils.get(ctx.guild.channels, name='public-apology')
-        await apology_channel.set_permissions(everyone_role, send_messages=False)
-        await asyncio.sleep(1)
-        await apology_channel.set_permissions(muted_role, send_messages=True)
+        notable_channel = discord.utils.get(ctx.guild.channels, name='notable-posts')
+        await notable_channel.set_permissions(everyone_role, send_messages=False)
         await asyncio.sleep(1)
 
         welcome_channel = discord.utils.get(ctx.guild.channels, name='welcome')
@@ -414,32 +407,7 @@ class Restoration(commands.Cog):
         await asyncio.sleep(1)
 
     @commands.command(hidden=True)
-    @commands.is_owner()
-    async def readd_emoji_list(self, ctx):
-        """Delete all old emojis and readd them from the emoji folders (corresponding to booster levels)."""
-
-        for emoji in ctx.guild.emojis:
-            await asyncio.sleep(1)
-            await emoji.delete()
-
-        await ctx.send("Deleted old emoji.")
-
-        emoji_count = 0
-
-        emoji_directories = ["data/emojis/level_0/", "data/emojis/level_1/", "data/emojis/level_2/"]
-        for directory in emoji_directories:
-            for filename in os.listdir(directory):
-                with open(f"{directory + filename}", 'rb') as emoji_file:
-                    emoji_image = emoji_file.read()
-                    await ctx.guild.create_custom_emoji(name=filename, image=emoji_image)
-                    emoji_count += 1
-
-                if emoji_count >= ctx.guild.emoji_limit:
-                    await ctx.send("Added maximum amount of emojis. Exiting.")
-                    return
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def create_messages(self, ctx):
 
         join_quiz_1_channel = discord.utils.get(ctx.guild.channels, name='join-quiz')
@@ -460,27 +428,11 @@ class Restoration(commands.Cog):
         await message.pin()
         await asyncio.sleep(1)
 
-        message = await otaku_channel.send(threads_message)
-        await asyncio.sleep(1)
-        await message.pin()
-        await asyncio.sleep(1)
-
         beginner_channel = discord.utils.get(ctx.guild.channels, name='beginner-questions')
         message = await beginner_channel.send(beginner_message)
         await asyncio.sleep(1)
         await message.pin()
         await asyncio.sleep(1)
-
-        book_channel = discord.utils.get(ctx.guild.channels, name='books')
-        book_leaderboard_message = await book_channel.send("Book Leaderboard Placeholder")
-
-        with open(f"cogs/guild_data.json") as json_file:
-            data_dict = json.load(json_file)
-
-        data_dict["book_leaderboard_message"] = book_leaderboard_message.id
-
-        with open(f'cogs/guild_data.json', 'w') as json_file:
-            json.dump(data_dict, json_file)
 
         await self.create_react_message(ctx)
 
@@ -488,7 +440,7 @@ class Restoration(commands.Cog):
         await welcome_channel.send(invite_link_message)
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def create_react_message(self, ctx):
 
         welcome_channel = discord.utils.get(ctx.guild.channels, name='welcome')
@@ -497,9 +449,13 @@ class Restoration(commands.Cog):
         for emoji_string in reaction_emojis:
             await asyncio.sleep(1)
             await reactions_message.add_reaction(emoji_string)
-
-        with open(f"cogs/guild_data.json") as json_file:
-            data_dict = json.load(json_file)
+        try:
+            with open(f"cogs/guild_data.json") as json_file:
+                data_dict = json.load(json_file)
+        except FileNotFoundError:
+            data_dict = dict()
+            with open(f'cogs/guild_data.json', 'w') as json_file:
+                json.dump(data_dict, json_file)
 
         data_dict["reactions_message_id"] = reactions_message.id
 
@@ -507,7 +463,7 @@ class Restoration(commands.Cog):
             json.dump(data_dict, json_file)
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def create_vn_messages(self, ctx):
 
         with open(f"cogs/guild_data.json") as json_file:
@@ -558,18 +514,20 @@ class Restoration(commands.Cog):
             json.dump(data_dict, json_file)
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def give_everyone_unranked_role(self, ctx):
         unranked_role = discord.utils.get(ctx.guild.roles, name='農奴 / Unranked')
         all_members = [member for member in ctx.guild.members if member.bot is False]
 
         for member in all_members:
-            await asyncio.sleep(1)
+            if unranked_role in member.roles:
+                continue
+            await asyncio.sleep(0.5)
             await member.add_roles(unranked_role)
             print(f"Gave unranked role to {str(member)}")
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def restore_roles(self, ctx):
         guild_roles = [role.name for role in ctx.guild.roles]
         rank_roles = ['大王', '大公', '公爵', '侯爵', '伯爵 / N3', '子爵 / N4']
@@ -590,15 +548,15 @@ class Restoration(commands.Cog):
             if set(rolesdict[str_member_id]) & set(rank_roles):
                 member = ctx.guild.get_member(int(str_member_id))
                 if member:
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(0.5)
                     await member.add_roles(*roles_to_restore)
-                    await asyncio.sleep(1)
+                    await asyncio.sleep(0.5)
                     await member.remove_roles(discord.utils.get(ctx.guild.roles, name="農奴 / Unranked"))
 
                     print(f"Restored the roles {', '.join([role.name for role in roles_to_restore])} to {member.name}.")
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def create_djt(self, ctx):
         """Recreate the DJT Server. A channel called "revive" has to exist for the function to work. """
         if "revive" in [channel.name for channel in ctx.guild.channels]:
@@ -643,11 +601,8 @@ class Restoration(commands.Cog):
                 await self.restore_roles(ctx)
                 await ctx.send("Restored user roles.")
 
-                # await self.readd_emoji_list(ctx)
-                # await ctx.send("Finished adding emoji.")
-
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def write_ids(self, ctx):
         """Write server ids to json file."""
 
@@ -830,7 +785,7 @@ class Restoration(commands.Cog):
             await announce_channel.send("Finished syncing roles with main server.")
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def download_emoji(self, ctx):
         """Command to download all emoji to data/emojis/"""
 

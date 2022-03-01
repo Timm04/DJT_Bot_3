@@ -142,6 +142,27 @@ class BookClub(commands.Cog):
 
                 await user.add_roles(book_reward_role)
 
+    @commands.command(hidden=True)
+    async def reposition_book_roles(self, ctx):
+        book_roles = []
+        for role in ctx.guild.roles:
+            if role.name.endswith("📚"):
+                book_roles.append(role)
+
+        reference_pos_role = discord.utils.get(self.myguild.roles, name=f"✓✓")
+        reference_pos = reference_pos_role.position - 1
+        positions = dict()
+
+        for role in book_roles:
+            positions[role] = reference_pos
+            reference_pos -= 1
+
+        await self.myguild.edit_role_positions(positions)
+
+
+
+
+
 
 def setup(bot):
     bot.add_cog(BookClub(bot))
