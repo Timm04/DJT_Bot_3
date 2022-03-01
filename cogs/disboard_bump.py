@@ -110,7 +110,7 @@ class BumpCog(commands.Cog):
                                         f"Check the channel pins for the leaderboard!")
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def updateleaderboard(self, ctx):
         await self.increment_leaderboard(None)
         await ctx.send("Success.")

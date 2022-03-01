@@ -45,7 +45,7 @@ class Extras(commands.Cog):
         await ctx.send(link)
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def editmsg(self, ctx, channelid, msgid, content):
         editchannel = self.myguild.get_channel(int(channelid))
         msg = await editchannel.fetch_message(int(msgid))

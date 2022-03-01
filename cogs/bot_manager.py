@@ -9,7 +9,7 @@ class BotManager(commands.Cog):
         self.bot = bot
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def reload_cog(self, ctx, cog_name):
         self.bot.reload_extension("cogs." + cog_name)
         self.bot.dispatch("ready")
@@ -18,7 +18,7 @@ class BotManager(commands.Cog):
         await ctx.send(f"Reloaded the cog: {cog_name}")
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def update(self, ctx):
         """Pull update to ubuntu server."""
         repo = git.Repo('/home/ubuntu/djt_bot_3')

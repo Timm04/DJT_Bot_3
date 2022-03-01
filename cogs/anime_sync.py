@@ -27,7 +27,7 @@ class AnimeCog(commands.Cog):
         self.subtitle_data = list()
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def create_sub_data(self, ctx):
         subtitle_files = [subtitle for subtitle in os.listdir('data/subs/') if subtitle.endswith('.srt')]
         for counter, subtitle_name in enumerate(subtitle_files):

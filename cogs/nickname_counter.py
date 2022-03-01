@@ -183,7 +183,7 @@ class NickName(commands.Cog):
                     pass
 
     @commands.command(hidden=True)
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def update_nicknames(self, ctx):
         for nick_record in self.load_all_nick_records():
             try:
