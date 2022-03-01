@@ -1,4 +1,4 @@
-py-cord
+py-cord==2.0.0b4
 srt
 requests
 boto3
