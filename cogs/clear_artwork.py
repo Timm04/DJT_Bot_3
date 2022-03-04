@@ -48,8 +48,9 @@ class Deleter(commands.Cog):
                 purged_messages = await channel.purge(limit=1000, check=contains_curse_words,
                                                       before=datetime.utcnow() - delete_limit)
                 if len(purged_messages) > 0:
-                    await channel.send(f"Deleted {len(purged_messages)} gamer messages.")
-                    print(f"Deleted {len(purged_messages)} gamer messages.")
+                    # await channel.send(f"Deleted {len(purged_messages)} gamer messages.")
+                    delete_string = "\n".join([message.content for message in purged_messages])
+                    print(f"Deleted {len(purged_messages)} gamer messages with the following content:\n{delete_string}")
 
         for thread in self.myguild.threads:
             print(f"Attempting to purge {thread.name}")
@@ -57,8 +58,9 @@ class Deleter(commands.Cog):
             purged_messages = await thread.purge(limit=500, check=contains_curse_words,
                                                   before=datetime.utcnow() - delete_limit)
             if len(purged_messages) > 0:
-                await thread.send(f"Deleted {len(purged_messages)} gamer messages.")
-                print(f"Deleted {len(purged_messages)} gamer messages.")
+                # await thread.send(f"Deleted {len(purged_messages)} gamer messages.")
+                delete_string = "\n".join([message.content for message in purged_messages])
+                print(f"Deleted {len(purged_messages)} gamer messages with the following content:\n{delete_string}")
 
 def setup(bot):
     bot.add_cog(Deleter(bot))
