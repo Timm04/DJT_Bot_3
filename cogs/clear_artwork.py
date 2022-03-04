@@ -5,6 +5,7 @@ from discord.ext import tasks
 from datetime import datetime
 from datetime import timedelta
 import json
+from better_profanity import profanity
 
 
 with open(f"cogs/guild_data.json") as json_file:
@@ -14,6 +15,9 @@ with open(f"cogs/guild_data.json") as json_file:
 class Deleter(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+
+        custom_badwords = ['tranny', 'trannies']
+        profanity.add_censor_words(custom_badwords)
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -35,12 +39,7 @@ class Deleter(commands.Cog):
         delete_limit = timedelta(hours=6)
 
         def contains_curse_words(message: discord.Message):
-            if "nigger" in message.content.lower():
-                return True
-            elif "tranny" in message.content.lower():
-                return True
-            else:
-                return False
+            return profanity.contains_profanity(message.content)
 
         for channel in self.myguild.channels:
             if isinstance(channel, discord.TextChannel):
@@ -49,8 +48,8 @@ class Deleter(commands.Cog):
                 purged_messages = await channel.purge(limit=1000, check=contains_curse_words,
                                                       before=datetime.utcnow() - delete_limit)
                 if len(purged_messages) > 0:
-                    pass
-                    # await channel.send(f"Deleted {len(purged_messages)} gamer messages.")
+                    await channel.send(f"Deleted {len(purged_messages)} gamer messages.")
+                    print(f"Deleted {len(purged_messages)} gamer messages.")
 
         for thread in self.myguild.threads:
             print(f"Attempting to purge {thread.name}")
@@ -58,8 +57,8 @@ class Deleter(commands.Cog):
             purged_messages = await thread.purge(limit=500, check=contains_curse_words,
                                                   before=datetime.utcnow() - delete_limit)
             if len(purged_messages) > 0:
-                pass
-                # await thread.send(f"Deleted {len(purged_messages)} gamer messages.")
+                await thread.send(f"Deleted {len(purged_messages)} gamer messages.")
+                print(f"Deleted {len(purged_messages)} gamer messages.")
 
 def setup(bot):
     bot.add_cog(Deleter(bot))
