@@ -36,7 +36,7 @@ class Deleter(commands.Cog):
 
     @tasks.loop(minutes=30)
     async def clear_curse_words_loop(self):
-        delete_limit = timedelta(hours=6)
+        delete_limit = timedelta(hours=24)
 
         def contains_curse_words(message: discord.Message):
             return profanity.contains_profanity(message.content)
