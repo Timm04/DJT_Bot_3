@@ -70,7 +70,7 @@ class Deleter(commands.Cog):
         sorted_users = sorted(point_dictionary, key=point_dictionary.get, reverse=True)
         for index, current_userid in enumerate(sorted_users):
             position = index + 1
-            userline = f"{position}. <@!{int(current_userid)}> with {point_dictionary[current_userid]} points."
+            userline = f"{position}. <@!{int(current_userid)}> : {point_dictionary[current_userid]}点."
             message_string.append(userline)
             if len("\n".join(message_string)) > 1800:
                 try:
