@@ -48,9 +48,7 @@ class Deleter(commands.Cog):
             json.dump(data_dict, json_file)
         self.s3_client.upload_file(f'data/{self.fname}', "djtbot", f'{self.fname}')
 
-    @commands.command(hidden=True)
-    @commands.has_permissions(administrator=True)
-    async def update_gamer_leaderboard(self, ctx=None, point_additions=None):
+    async def update_gamer_leaderboard(self, point_additions=None):
         point_dictionary = self.pull_all_records()
 
         if point_additions:
@@ -122,7 +120,7 @@ class Deleter(commands.Cog):
                     for message in purged_messages:
                         point_additions[message.author.id] = point_additions.get(message.author.id, 0) + 1
 
-                    await self.update_gamer_leaderboard(point_additions=point_additions)
+                    await self.update_gamer_leaderboard(point_additions)
 
 
         for thread in self.myguild.threads:
@@ -139,7 +137,7 @@ class Deleter(commands.Cog):
                 for message in purged_messages:
                     point_additions[message.author.id] = point_additions.get(message.author.id, 0) + 1
 
-                await self.update_gamer_leaderboard(point_additions=point_additions)
+                await self.update_gamer_leaderboard(point_additions)
 
 def setup(bot):
     bot.add_cog(Deleter(bot))
