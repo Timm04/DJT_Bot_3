@@ -51,7 +51,7 @@ class Reactions(commands.Cog):
         if unranked_role_id in role_ids:
             return False
         elif n4_role_id in role_ids:
-            return False
+            return True
         else:
             return True
 
