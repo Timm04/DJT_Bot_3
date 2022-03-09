@@ -78,7 +78,7 @@ class Deleter(commands.Cog):
                 except IndexError:
                     new_pins.append(await otaku_channel.send("\n".join(message_string)))
                 edit_index += 1
-                message_string = []
+                message_string = ["Gamer Leaderboard:"]
 
         if message_string:
             try:
