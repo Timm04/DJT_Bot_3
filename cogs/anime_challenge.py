@@ -78,6 +78,11 @@ class Anime(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def review(self, ctx, anime_code, *, review):
+        banned_list = self.pull_all_records("anime_banned_users.json")
+        if str(ctx.author.id) in banned_list:
+            await ctx.send("You are banned from the anime challenge.")
+            return
+
         if ctx.channel != self.anime_channel:
             await ctx.send("Please use this command in the anime channel.")
             return
@@ -204,6 +209,21 @@ class Anime(commands.Cog):
         del anime_leaderboard[str(id)]
         self.push_all_records(anime_leaderboard, "anime_leaderboard.json")
         await ctx.send(f"Removed user with the id {id} from the database")
+
+    @commands.command()
+    @is_anime_manager()
+    async def ban_user(self, ctx, id):
+        anime_leaderboard = self.pull_all_records("anime_leaderboard.json")
+        del anime_leaderboard[str(id)]
+        self.push_all_records(anime_leaderboard, "anime_leaderboard.json")
+
+        banned_list = self.pull_all_records("anime_banned_users.json")
+        banned_list.append(id)
+        with open(f'data/anime_banned_users.json', 'w') as json_file:
+            json.dump(banned_list, json_file)
+        self.s3_client.upload_file(f'data/anime_banned_users.json', "djtbot", f'anime_banned_users.json')
+
+        await ctx.send("User has been banned.")
 
     async def create_rules_post(self):
         rule_message_string = """Anime channel rules:
