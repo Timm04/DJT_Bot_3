@@ -56,7 +56,7 @@ class Anime(commands.Cog):
             json.dump(data_dict, json_file)
         self.s3_client.upload_file(f'data/{fname}', "djtbot", f'{fname}')
 
-    @commands.command()
+    @commands.command(hidden=True)
     @is_anime_manager()
     async def add_anime(self, ctx, anime_code, *, anime_name):
         anime_database = self.pull_all_records("anime_database.json")
@@ -65,7 +65,7 @@ class Anime(commands.Cog):
         await self.update_posts()
         await ctx.send(f"Added {anime_name} as {anime_code} to database.")
 
-    @commands.command()
+    @commands.command(hidden=True)
     @is_anime_manager()
     async def remove_anime(self, ctx, anime_code):
         anime_database = self.pull_all_records("anime_database.json")
