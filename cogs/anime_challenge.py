@@ -77,7 +77,6 @@ class Anime(commands.Cog):
 
     @commands.command()
     @commands.guild_only()
-    @is_anime_manager()
     async def review(self, ctx, anime_code, *, review):
         if ctx.channel != self.anime_channel:
             await ctx.send("Please use this command in the anime channel.")
