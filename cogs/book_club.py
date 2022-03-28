@@ -126,9 +126,9 @@ class BookClub(commands.Cog):
         for user_data in leaderboard.items():
             user = self.myguild.get_member(int(user_data[0]))
             if user:
-                for role in user.roles:
-                    if role.name == user_data[1]:
-                        return
+                role_names = [role.name for role in user.roles]
+                if user_data[1] in role_names:
+                    continue
 
                 book_reward_role = discord.utils.get(self.myguild.roles, name=user_data[1])
                 if not book_reward_role:
