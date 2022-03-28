@@ -38,6 +38,7 @@ class Anime(commands.Cog):
         await asyncio.sleep(600)
         await self.create_rules_post()
         self.update_posts.start()
+        self.give_roles.start()
 
     def pull_all_records(self, fname):
         try:
