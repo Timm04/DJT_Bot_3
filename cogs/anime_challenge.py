@@ -113,6 +113,9 @@ class Anime(commands.Cog):
             if anime_code in watched_anime:
                 await ctx.send("You already reviewed this anime!")
                 return
+            else:
+                watched_anime.append(anime_code)
+                anime_leaderboard[user_id] = watched_anime
         await self.anime_channel.send(
             f"{ctx.author} (ID:{ctx.author.id}) just created the following review for the anime {anime_name}:"
             f"\n`{review}`")
@@ -137,7 +140,7 @@ class Anime(commands.Cog):
         database_msg = "All voted animes:\n"
         message_count = 0
         for anime_code, anime_description in anime_database.items():
-            database_msg += f"\t - {anime_description}. Code: `{anime_code}`"
+            database_msg += f"\n - {anime_description}. Code: `{anime_code}`"
             if len(database_msg) > 1800:
                 try:
                     await database_pins[message_count].edit(content=database_msg)

@@ -1,114 +1,253 @@
-"""
-Cog for the manga club.
-Displays a leaderboard and allows users to log
-number of volumes read in a month.
-Most code in this cog is by Anacreon.
-"""
+"""Cog for the Manga challenge"""
+import botocore.exceptions
+import discord
 from discord.ext import commands
 from discord.ext import tasks
-import boto3
 import json
-from datetime import datetime
+import boto3
+import asyncio
 
 
-with open("cogs/guild_data.json") as json_file:
+def is_manga_manager():
+    async def predicate(ctx):
+        run_command = False
+        if ctx.author.id == 922627087020482651:
+            run_command = True
+        return run_command
+
+    return commands.check(predicate)
+
+#############################################################
+# Variables (Temporary)
+with open(f"cogs/guild_data.json") as json_file:
     data_dict = json.load(json_file)
     guild_id = data_dict["guild_id"]
-    manga_channel_id = data_dict['manga_channel_id']
 
-class MangaClub(commands.Cog):
+class manga(commands.Cog):
+    """Manga cog"""
 
     def __init__(self, bot):
         self.bot = bot
-        self.fname = "mangadata.json"
-        self.first_iteration = True
         self.s3_client = boto3.client('s3')
 
     @commands.Cog.listener()
     async def on_ready(self):
         self.myguild = self.bot.get_guild(guild_id)
-        self.manga_channel = self.bot.get_channel(manga_channel_id)
-        self.display_leaderboard.start()
+        self.manga_channel = discord.utils.get(self.myguild.channels, name="manga")
+        await asyncio.sleep(600)
+        await self.create_rules_post()
+        self.update_posts.start()
+        self.give_roles.start()
 
-    def pull_all_records(self):
-        self.s3_client.download_file('djtbot', self.fname, f'data/{self.fname}')
-        with open(f"data/{self.fname}") as json_file:
-            manga_dict = json.load(json_file)
-        return manga_dict
-
-    def push_all_records(self, manga_dict):
-        with open(f'data/{self.fname}', 'w') as json_file:
-            json.dump(manga_dict, json_file)
-        self.s3_client.upload_file(f'data/{self.fname}', "djtbot", f'{self.fname}')
-
-    @tasks.loop(hours=24)
-    async def display_leaderboard(self):
-        """
-        Send messages to the manga channel showing the entire leaderboard every 24 hours.
-        """
-        pins = await self.manga_channel.pins()
-        old_pins = []
-        for old_pin in pins:
-            if old_pin.author.id == self.bot.user.id:
-                old_pins.append(old_pin)
-
-        # send new leaderboard and pin it
-        manga_dict = self.pull_all_records()
-        msg = ''
-        new_pins = []
-        message_count = 0
-        for rank, (user_id, record) in enumerate(sorted(manga_dict.items(), key=lambda x: x[1]['score'], reverse=True)):
-            msg += f'{rank+1}. <@!{user_id}> : {record["score"]} volumes read\n'
-            if len(msg) > 1800:
-                try:
-                    await old_pins[message_count].edit(content=msg)
-                except IndexError:
-                    new_pins.append(await self.manga_channel.send(msg))
-                message_count += 1
-                msg = ''
-        if msg:
+    def pull_all_records(self, fname):
+        try:
+            self.s3_client.download_file('djtbot', fname, f'data/{fname}')
+        except botocore.exceptions.ClientError:
             try:
-                await old_pins[message_count].edit(content=msg)
-            except IndexError:
-                new_pins.append(await self.manga_channel.send(msg))
+                with open(f"data/{fname}") as json_file:
+                    data_dict = json.load(json_file)
+                    return data_dict
+            except FileNotFoundError:
+                empty_dict = dict()
+                return empty_dict
 
-        if new_pins:
-            for m in new_pins[::-1]:
-                await m.pin()
+        with open(f"data/{fname}") as json_file:
+            data_dict = json.load(json_file)
 
-    def set_monthly_volumes(self, user_record, vol_count):
-        last_update = datetime.fromtimestamp(user_record['last_update']['time'])
-        now = datetime.utcnow()
+        return data_dict
 
-        if last_update.month == now.month:
-            user_record['score'] -= user_record['last_update']['count']
-        user_record['score'] += vol_count
-        user_record['last_update'] = {
-            'time': now.timestamp(),
-            'count': vol_count
-        }
+    def push_all_records(self, data_dict, fname):
+        with open(f'data/{fname}', 'w') as json_file:
+            json.dump(data_dict, json_file)
+        self.s3_client.upload_file(f'data/{fname}', "djtbot", f'{fname}')
+
+    @commands.command(hidden=True)
+    @is_manga_manager()
+    async def add_manga(self, ctx, manga_code, *, manga_name):
+        manga_database = self.pull_all_records("manga_database.json")
+        manga_database[manga_code] = manga_name
+        self.push_all_records(manga_database, "manga_database.json")
+        await self.update_posts()
+        await ctx.send(f"Added {manga_name} as {manga_code} to database.")
+
+    @commands.command(hidden=True)
+    @is_manga_manager()
+    async def remove_manga(self, ctx, manga_code):
+        manga_database = self.pull_all_records("manga_database.json")
+        manga_name = manga_database[manga_code]
+        manga_database.remove(manga_code)
+        self.push_all_records(manga_database, "manga_database.json")
+        await self.update_posts()
+        await ctx.send(f"Remove {manga_name} from database.")
 
     @commands.command()
-    async def mangavols(self, ctx, volume_count):
-        """
-        <count> Set manga volume count.
-        """
-        if ctx.channel.id != manga_channel_id:
+    @commands.guild_only()
+    async def review_manga(self, ctx, manga_code, *, review):
+        banned_list = self.pull_all_records("manga_banned_users.json")
+        if str(ctx.author.id) in banned_list:
+            await ctx.send("You are banned from the manga challenge.")
             return
 
-        user = ctx.author
-        volume_count = int(volume_count)
-        if 0 < volume_count <= 10:
-            manga_dict = self.pull_all_records()
-            if user.id not in manga_dict:
-                manga_dict[user.id] = {'score': 0, 'last_update': {'time': 0, 'count': 0}}
+        if ctx.channel != self.manga_channel:
+            await ctx.send("Please use this command in the manga channel.")
+            return
 
-            self.set_monthly_volumes(manga_dict[user.id], volume_count)
-            self.push_all_records(manga_dict)
-            await ctx.send(f"Your volumes read for this month is now set to {volume_count}")
+        if len(review) < 600:
+            await ctx.send("Your review is too short. A review has to be at least 600 symbols long.")
+            return
+
+        if len(review) > 1900:
+            await ctx.send("Your review is too long. Keep it below 1900 symbols.")
+            return
+
+        manga_database = self.pull_all_records("manga_database.json")
+        if manga_code not in manga_database:
+            await ctx.send("This manga is not in the database.")
+            return
+
+        manga_name = manga_database[manga_code]
+
+        manga_leaderboard = self.pull_all_records("manga_leaderboard.json")
+        user_id = str(ctx.author.id)
+        read_manga = manga_leaderboard.get(user_id)
+        if not read_manga:
+            read_manga = [manga_code]
+            manga_leaderboard[user_id] = read_manga
         else:
-            await ctx.send("Number of volumes must be less than 10.")
+            if manga_code in read_manga:
+                await ctx.send("You already reviewed this manga!")
+                return
+            else:
+                read_manga.append(manga_code)
+                manga_leaderboard[user_id] = read_manga
+        await self.manga_channel.send(
+            f"{ctx.author} (ID:{ctx.author.id}) just created the following review for the manga {manga_name}:"
+            f"\n`{review}`")
+        await self.manga_channel.send(f"Awarded a point to {ctx.author.mention}: {len(read_manga) - 1} -> {len(read_manga)}")
+        self.push_all_records(manga_leaderboard, "manga_leaderboard.json")
+
+    @tasks.loop(minutes=60.0)
+    async def update_posts(self):
+        manga_leaderboard = self.pull_all_records("manga_leaderboard.json")
+        manga_database = self.pull_all_records("manga_database.json")
+
+        leaderboard_pins = []
+        database_pins = []
+
+        manga_pins = await self.manga_channel.pins()
+        for pin in manga_pins:
+            if pin.content.startswith("Manga leaderboard:"):
+                leaderboard_pins.append(pin)
+            elif pin.content.startswith("All voted mangas:"):
+                database_pins.append(pin)
+
+        database_msg = "All voted mangas:\n"
+        message_count = 0
+        for manga_code, manga_description in manga_database.items():
+            database_msg += f"\n - {manga_description}. Code: `{manga_code}`"
+            if len(database_msg) > 1800:
+                try:
+                    await database_pins[message_count].edit(content=database_msg)
+                    message_count += 1
+                except IndexError:
+                    new_database_message = await self.manga_channel.send(database_msg)
+                    await new_database_message.pin()
+                    database_msg = "All voted mangas:\n"
+
+        if database_msg:
+            try:
+                await database_pins[message_count].edit(content=database_msg)
+            except IndexError:
+                new_database_message = await self.manga_channel.send(database_msg)
+                await new_database_message.pin()
+
+        leaderboard_msg = "Manga leaderboard:\n"
+        message_count = 0
+        for rank, (user_id, watched_manga_list) in enumerate(sorted(manga_leaderboard.items(), key=lambda x: len(x[1]), reverse=True)):
+            leaderboard_msg += f'{rank + 1}. <@!{user_id}> : {len(watched_manga_list)} 漫画 read.\n'
+            if len(leaderboard_msg) > 1800:
+                try:
+                    await leaderboard_pins[message_count].edit(content=leaderboard_msg)
+                    message_count += 1
+                except IndexError:
+                    new_leaderboard_message = await self.manga_channel.send(leaderboard_msg)
+                    await new_leaderboard_message.pin()
+                    leaderboard_msg = "Manga leaderboard:\n"
+
+        if leaderboard_msg:
+            try:
+                await leaderboard_pins[message_count].edit(content=leaderboard_msg)
+            except IndexError:
+                new_leaderboard_message = await self.manga_channel.send(leaderboard_msg)
+                await new_leaderboard_message.pin()
+
+    @tasks.loop(minutes=10)
+    async def give_roles(self):
+        leaderboard = self.pull_all_records("manga_leaderboard.json")
+        for user_data in leaderboard.items():
+            user = self.myguild.get_member(int(user_data[0]))
+            if user:
+                role_names = [role.name for role in user.roles]
+                if str(len(user_data[1])) + "🥭" in role_names:
+                    continue
+
+                manga_reward_role = discord.utils.get(self.myguild.roles, name=str(len(user_data[1]))+"🥭")
+                if not manga_reward_role:
+                    reference_pos_role = discord.utils.get(self.myguild.roles, name=f"✓✓")
+                    reference_pos = reference_pos_role.position - 1
+
+                    manga_reward_role = await self.myguild.create_role(name=str(len(user_data[1]))+"🥭",
+                                                                      colour=discord.Colour(12423186))
+                    positions = {manga_reward_role: reference_pos}
+                    await self.myguild.edit_role_positions(positions)
+
+                await user.add_roles(manga_reward_role)
+
+    @commands.command()
+    @commands.has_permissions(administrator=True)
+    async def update_manga(self, ctx):
+        await self.update_posts()
+        await self.give_roles()
+        await self.create_rules_post()
+        await ctx.send("Done.")
+
+    @commands.command(hidden=True)
+    @is_manga_manager()
+    async def clear_user_from_manga(self, ctx, id):
+        manga_leaderboard = self.pull_all_records("manga_leaderboard.json")
+        del manga_leaderboard[str(id)]
+        self.push_all_records(manga_leaderboard, "manga_leaderboard.json")
+        await ctx.send(f"Removed user with the id {id} from the database")
+
+    @commands.command(hidden=True)
+    @is_manga_manager()
+    async def ban_user_from_manga(self, ctx, id):
+        manga_leaderboard = self.pull_all_records("manga_leaderboard.json")
+        del manga_leaderboard[str(id)]
+        self.push_all_records(manga_leaderboard, "manga_leaderboard.json")
+
+        banned_list = self.pull_all_records("manga_banned_users.json")
+        banned_list.append(id)
+        with open(f'data/manga_banned_users.json', 'w') as json_file:
+            json.dump(banned_list, json_file)
+        self.s3_client.upload_file(f'data/manga_banned_users.json', "djtbot", f'manga_banned_users.json')
+
+        await ctx.send("User has been banned.")
+
+    async def create_rules_post(self):
+        rule_message_string = """Manga channel rules:
+To get points on the leaderboard write `$review_manga manga_code your_review`. 
+A review has to be at least 600 characters long.
+Should you abuse this feature or write a fake review you will be banned from the manga challenge and all your points will be revoked."""
+
+        manga_pins = await self.manga_channel.pins()
+        for pin in manga_pins:
+            if pin.content.startswith("Manga channel rules:"):
+                return
+
+        rule_message = await self.manga_channel.send(rule_message_string)
+        await rule_message.pin()
 
 
 def setup(bot):
-    bot.add_cog(MangaClub(bot))
+    bot.add_cog(manga(bot))
