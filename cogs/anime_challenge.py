@@ -187,6 +187,7 @@ class Anime(commands.Cog):
                 if str(len(user_data[1])) + "📺" in role_names:
                     continue
 
+                all_anime_reward_roles = [role for role in self.myguild.roles if role.name.endswith("📺")]
                 anime_reward_role = discord.utils.get(self.myguild.roles, name=str(len(user_data[1]))+"📺")
                 if not anime_reward_role:
                     reference_pos_role = discord.utils.get(self.myguild.roles, name=f"✓✓")
@@ -197,6 +198,7 @@ class Anime(commands.Cog):
                     positions = {anime_reward_role: reference_pos}
                     await self.myguild.edit_role_positions(positions)
 
+                await user.remove_roles(*all_anime_reward_roles)
                 await user.add_roles(anime_reward_role)
 
     @commands.command()
