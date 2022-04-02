@@ -15,7 +15,6 @@ with open(f"cogs/guild_data.json") as json_file:
     log_channel_id = data_dict["elite_mod_channel_id"]
     mod_role_id = data_dict["mod_role_id"]
     admin_role_id = data_dict["admin_role_id"]
-    mod_channel_id = 862728099790323742
 
 def is_mod_or_admin():
     async def predicate(ctx):
@@ -35,6 +34,7 @@ class DeletedMSG(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.myguild = self.bot.get_guild(guild_id)
+        self.mod_channel = discord.utils.get(self.myguild.channels, name="mod")
         self.log_channel = self.bot.get_channel(log_channel_id)
         self.delete_limit = timedelta(hours=24)
         self.deleter.start()
@@ -77,7 +77,6 @@ class DeletedMSG(commands.Cog):
     @commands.Cog.listener()
     async def on_member_ban(self, guild, user):
         admin_role = self.myguild.get_role(admin_role_id)
-        mod_channel = self.myguild.get_channel(mod_channel_id)
         await mod_channel.send(f"{admin_role.mention} {user.mention} {user.name} just got banned!")
 
 

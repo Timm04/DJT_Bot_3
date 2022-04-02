@@ -18,7 +18,8 @@ class RankSaver(commands.Cog):
 
     @commands.Cog.listener()
     async def on_ready(self):
-        self.rank_saver.start()
+        pass
+        # self.rank_saver.start()
 
     @tasks.loop(minutes=10.0)
     async def rank_saver(self):

@@ -32,6 +32,7 @@ djt_channels = {
                 ("vn", "VN of the Month: To talk in this channel react to the relevant message in #welcome. Check "
                        "pins for ongoing votes and the leaderboard."),
                 ("books", "Japanese books and group reads. | To write here react to the message in #welcome."),
+                ("anime", "Easy anime:, Free slot:"),
                 ("manga", "Channel for the manga club."),
                 ("event", "Channel for special occasions"),
                 ("notable-posts", "High quality content.")],
@@ -54,6 +55,7 @@ djt_channels = {
 
 threads = {
     "otaku": [("Mining Thread", "Talk about things you mined"),
+              ("Elden Ring", "Talk about Elden Ring"),
               ("Seasonal Anime", "Talk about current airing shows."),
               ("Kanken Practice", "Talk about the kanji writing, the Kanji Kentei test, the Kanken Anki deck and other related topics."),
               ("Gacha Thread", "Talk about Gacha games.")],
@@ -82,7 +84,8 @@ user_ids = {
     "nullposter": 182138235206631434
 }
 
-backup_server_id = 862488397371932672
+backup_server_id = 948016353263124521
+sync_roles_announce_channel = 948016353728663603
 
 join_quiz_pinned_message = """Welcome to Daily Japanese Thread. Access to all channels is restricted to Japanese learners!
 To join type `k!quiz n4 nodelay atl=10 14 size=80 mmq=2` and get 14 points (max 1 failed question).
@@ -98,7 +101,7 @@ role_perks_message = """Role perks:\n
 N4: 
 - Access to the main chat and event roles
 N3: 
-- Access to the VN channel and VN challenge
+- 
 N2:
 - Talk in the beginner questions room
 N1:
@@ -106,7 +109,7 @@ N1:
 Taikou:
 - Create a custom role with a custom color
 Daiou: 
-- Access to emoji management through bot (up to 5 per user)
+- Access to emoji management through bot (up to 15 per user)
 - View the hidden mod channel
 
 Server Boosters:
@@ -117,12 +120,13 @@ reactions_string = """React to this message to get the corresponding role.
 🖋️ : Visual novel reading challenge and access to the VN channel..
 📖 : Book club and access to the book channel.
 🥭 : Manga club and access to the manga channel.
+📺 : Anime club and notifications about the monthly anime.
 📹 : Mentionable role for group reading events.
 💬 : Mentionable role for having Japanese conversations.
 🎥 : Role for the movie evenings.
 ❗ : Role to get notifications when a bump is due in the bump channel.
 ⭐ : Role for general purpose events such as karaoke, challenges or competitions."""
-reaction_emojis = ['🖋️', '📖', '🥭', '📹', '💬', '🎥', '❗', '⭐']
+reaction_emojis = ['🖋️', '📖', '🥭', '📺', '📹', '💬', '🎥', '❗', '⭐']
 
 invite_link_message = """Invite link always here: https://animecards.site/discord/ (bookmark it)
 
@@ -141,6 +145,7 @@ Other resources can be found on my site <https://anacreondjt.gitlab.io/>
 and on the tmw's resource page <https://rentry.co/japanese_resources>
 stegatxins0 wrote a really in-depth advanced anki mining guide that more advanced learner's may find helpful <https://rentry.co/mining>"""
 
+bot_role_name = "策士の九尾"
 
 class Restoration(commands.Cog):
 
@@ -233,6 +238,7 @@ class Restoration(commands.Cog):
             "Manga Club": discord.Colour.dark_purple(),
             "Movie": discord.Colour.green(),
             "Conversation": discord.Colour.dark_teal(),
+            "Anime": discord.Colour.dark_blue(),
             "Bumper": discord.Colour.teal(),
             "Quiz God": discord.Colour.dark_purple(),
             "Quizzer": discord.Colour.dark_purple(),
@@ -289,7 +295,6 @@ class Restoration(commands.Cog):
         await daiou_role.edit(hoist=True)
         await asyncio.sleep(1)
 
-        bot_role_name = "日本語"
         bot_role = discord.utils.get(ctx.guild.roles, name=bot_role_name)
 
         pollmaster_role = discord.utils.get(ctx.guild.roles, name="Pollmaster")
@@ -347,7 +352,7 @@ class Restoration(commands.Cog):
         await asyncio.sleep(1)
         await vn_channel.set_permissions(pollmaster_role, read_messages=True, send_messages=True)
         await asyncio.sleep(1)
-        await vn_channel.set_permissions(vn_manager_role, manage_channels=True, manage_messages=True)
+        await vn_channel.set_permissions(vn_manager_role, manage_channels=True, manage_messages=True, mention_everyone=True)
 
         manga_channel = discord.utils.get(ctx.guild.channels, name='manga')
         await manga_channel.set_permissions(everyone_role, send_messages=False)
@@ -711,78 +716,74 @@ class Restoration(commands.Cog):
 
         await ctx.send("Wrote all ids.")
 
-    @tasks.loop(minutes=60.0)
-    async def sync_roles_new(self):
+    @commands.command(hidden=True)
+    @commands.has_permissions(administrator=True)
+    async def sync_roles_new(self, ctx):
         """This task regularly syncs roles from the rolesdata.json file to the guild defined by backup_server_id."""
+        print("Syncing roles from main server to backup server...")
+        backup_guild = self.bot.get_guild(backup_server_id)
+        announce_channel = backup_guild.get_channel(sync_roles_announce_channel)
 
-        if self.loop_iteration == 0:
-            self.loop_iteration += 1
+        self.s3_client.download_file('djtbot', "rolesdata.json", 'data/rolesdata.json')
 
-        else:
-            print("Syncing roles from main server to backup server...")
-            backup_guild = self.bot.get_guild(backup_server_id)
-            announce_channel = backup_guild.get_channel(902919584577888286)
+        with open(f"data/rolesdata.json") as json_file:
+            rolesdict = json.load(json_file)
 
-            self.s3_client.download_file('djtbot', "rolesdata.json", 'data/rolesdata.json')
+        backup_members = [member.id for member in backup_guild.members if member.bot is False]
+        saved_user_ids = [int(id_string) for id_string in rolesdict]
+        saved_member_ids = [member_id for member_id in backup_members if member_id in saved_user_ids]
 
-            with open(f"data/rolesdata.json") as json_file:
-                rolesdict = json.load(json_file)
+        for member_id in saved_member_ids:
+            member = backup_guild.get_member(member_id)
+            roles_already_given = [role for role in member.roles if
+                                   role.name != 'Server Booster' and role.name != '農奴 / Unranked' and role.name != "@everyone"]
+            roles_saved = [discord.utils.get(backup_guild.roles, name=role_string) for role_string in
+                           rolesdict[str(member_id)]]
+            roles_saved = [role for role in roles_saved if role is not None]
+            illegal_roles = ["Admin", "Mod", "Muted", "Server Booster", "Emoji"]
+            roles_to_give = [role for role in roles_saved if
+                             role not in roles_already_given and role.name not in illegal_roles]
+            roles_to_remove = [role for role in roles_already_given if role not in roles_saved]
 
-            backup_members = [member.id for member in backup_guild.members if member.bot is False]
-            saved_user_ids = [int(id_string) for id_string in rolesdict]
-            saved_member_ids = [member_id for member_id in backup_members if member_id in saved_user_ids]
+            if roles_to_give:
+                await asyncio.sleep(1)
+                await member.add_roles(*roles_to_give)
+                await asyncio.sleep(1)
+                await announce_channel.send(
+                    f"Gave {', '.join([role.name for role in roles_to_give])} to {str(member)}")
+            if roles_to_remove:
+                await asyncio.sleep(1)
+                await member.remove_roles(*roles_to_remove)
+                await asyncio.sleep(1)
+                await announce_channel.send(
+                    f"Removed {', '.join([role.name for role in roles_to_remove])} from {str(member)}")
 
-            for member_id in saved_member_ids:
-                member = backup_guild.get_member(member_id)
-                roles_already_given = [role for role in member.roles if
-                                       role.name != 'Server Booster' and role.name != '農奴 / Unranked' and role.name != "@everyone"]
-                roles_saved = [discord.utils.get(backup_guild.roles, name=role_string) for role_string in
-                               rolesdict[str(member_id)]]
-                roles_saved = [role for role in roles_saved if role is not None]
-                illegal_roles = ["Admin", "Mod", "Muted", "Server Booster", "Emoji"]
-                roles_to_give = [role for role in roles_saved if
-                                 role not in roles_already_given and role.name not in illegal_roles]
-                roles_to_remove = [role for role in roles_already_given if role not in roles_saved]
+        # Make sure everyone has one rank role.
+        unranked_role = discord.utils.get(backup_guild.roles, name='農奴 / Unranked')
+        n4_role = discord.utils.get(backup_guild.roles, name='子爵 / N4')
+        n3_role = discord.utils.get(backup_guild.roles, name='伯爵 / N3')
+        n2_role = discord.utils.get(backup_guild.roles, name='侯爵')
+        n1_role = discord.utils.get(backup_guild.roles, name='公爵')
+        taikou_role = discord.utils.get(backup_guild.roles, name='大公')
+        daiou_role = discord.utils.get(backup_guild.roles, name='大王')
+        rank_roles = [unranked_role, n4_role, n3_role, n2_role, n1_role, taikou_role, daiou_role]
 
-                if roles_to_give:
-                    await asyncio.sleep(1)
-                    await member.add_roles(*roles_to_give)
-                    await asyncio.sleep(1)
-                    await announce_channel.send(
-                        f"Gave {', '.join([role.name for role in roles_to_give])} to {str(member)}")
-                if roles_to_remove:
-                    await asyncio.sleep(1)
-                    await member.remove_roles(*roles_to_remove)
-                    await asyncio.sleep(1)
-                    await announce_channel.send(
-                        f"Removed {', '.join([role.name for role in roles_to_remove])} from {str(member)}")
+        all_members = [member for member in backup_guild.members if member.bot is False]
+        for member in all_members:
+            user_rank_roles = [role for role in member.roles if role in rank_roles]
+            if len(user_rank_roles) == 0:
+                await asyncio.sleep(1)
+                await member.add_roles(unranked_role)
+                await asyncio.sleep(1)
+                await announce_channel.send(f"Gave {unranked_role.name} role to {str(member)}")
 
-            # Make sure everyone has one rank role.
-            unranked_role = discord.utils.get(backup_guild.roles, name='農奴 / Unranked')
-            n4_role = discord.utils.get(backup_guild.roles, name='子爵 / N4')
-            n3_role = discord.utils.get(backup_guild.roles, name='伯爵 / N3')
-            n2_role = discord.utils.get(backup_guild.roles, name='侯爵')
-            n1_role = discord.utils.get(backup_guild.roles, name='公爵')
-            taikou_role = discord.utils.get(backup_guild.roles, name='大公')
-            daiou_role = discord.utils.get(backup_guild.roles, name='大王')
-            rank_roles = [unranked_role, n4_role, n3_role, n2_role, n1_role, taikou_role, daiou_role]
+            if len(user_rank_roles) == 2:
+                await asyncio.sleep(1)
+                await member.remove_roles(unranked_role)
+                await asyncio.sleep(1)
+                await announce_channel.send(f"Removed {unranked_role.name} role from {str(member)}")
 
-            all_members = [member for member in backup_guild.members if member.bot is False]
-            for member in all_members:
-                user_rank_roles = [role for role in member.roles if role in rank_roles]
-                if len(user_rank_roles) == 0:
-                    await asyncio.sleep(1)
-                    await member.add_roles(unranked_role)
-                    await asyncio.sleep(1)
-                    await announce_channel.send(f"Gave {unranked_role.name} role to {str(member)}")
-
-                if len(user_rank_roles) == 2:
-                    await asyncio.sleep(1)
-                    await member.remove_roles(unranked_role)
-                    await asyncio.sleep(1)
-                    await announce_channel.send(f"Removed {unranked_role.name} role from {str(member)}")
-
-            await announce_channel.send("Finished syncing roles with main server.")
+        await announce_channel.send("Finished syncing roles with main server.")
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)

@@ -42,6 +42,7 @@ class Reactions(commands.Cog):
         self.movierole = discord.utils.get(self.myguild.roles, name='Movie')
         self.bumprole = discord.utils.get(self.myguild.roles, name='Bumper')
         self.eventrole = discord.utils.get(self.myguild.roles, name='Event')
+        self.animerole = discord.utils.get(self.myguild.roles, name='Anime')
 
     async def vn_role_allowed(self, role_ids):
         allowed_role_ids = [booster_role_id, student_id, quizzer_id, quiz_god_id]
@@ -123,6 +124,9 @@ class Reactions(commands.Cog):
             elif str(rawevent.emoji) == "🥭":
                 await reaction_member.add_roles(self.manga_role)
                 await private_channel.send(f"{reaction_member.mention} You got the manga club role!")
+            elif str(rawevent.emoji) == "📺":
+                await reaction_member.add_roles(self.animerole)
+                await private_channel.send(f"{reaction_member.mention} You got the anime club role!")
             else:
                 react_channel = discord.utils.get(self.myguild.channels, name='welcome')
                 reaction_message = await react_channel.fetch_message(role_assignment_message_id)
@@ -161,6 +165,9 @@ class Reactions(commands.Cog):
             elif str(rawevent.emoji) == "🥭":
                 await reaction_member.remove_roles(self.manga_role)
                 await private_channel.send(f"{reaction_member.mention} You lost the manga club role!")
+            elif str(rawevent.emoji) == "📺":
+                await reaction_member.remove_roles(self.animerole)
+                await private_channel.send(f"{reaction_member.mention} You lost the anime club role!")
 
 def setup(bot):
     bot.add_cog(Reactions(bot))
