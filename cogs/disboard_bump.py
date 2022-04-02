@@ -120,7 +120,7 @@ class BumpCog(commands.Cog):
         if message.author.id == 302050872383242240:
             for embed in message.embeds:
                 returnmessage = embed.description
-                userid = re.findall(r"(\d+)", returnmessage)[0]
+                userid = message.interaction.user.id
                 if "👍" in returnmessage or ':thumbsup:' in returnmessage:
                     self.startwaiter.cancel()
                     self.waitminuteswaiter.cancel()
@@ -155,7 +155,7 @@ class BumpCog(commands.Cog):
 
                     await self.savetime(int(self.wait_time))
 
-        elif message.channel.id == bump_channel_id and message.content == "!d bump":
+        elif message.channel.id == bump_channel_id and message.content == "/bump":
             await asyncio.sleep(8)
             if self.idlewaiter.is_running() or self.startwaiter.is_running():
                 await self.msg_channel.send("Disboard appears to be offline. Simulating successful bump.")
@@ -177,7 +177,7 @@ class BumpCog(commands.Cog):
             self.bumperindex = 1
 
         elif self.bumperindex == 1:
-            await self.msg_channel.send(f"{self.bumprole.mention} Bump now with `!d bump`")
+            await self.msg_channel.send(f"{self.bumprole.mention} Bump now with `/bump`")
             self.idlewaiter.start()
             self.bumpwaiter.cancel()
 
@@ -194,7 +194,7 @@ class BumpCog(commands.Cog):
             self.starterindex = 2
 
         elif self.starterindex == 2:
-            await self.msg_channel.send(f"Bump now with `!d bump`")
+            await self.msg_channel.send(f"Bump now with `/bump`")
             self.starterindex = 0
             self.idlewaiter.start()
             self.startwaiter.cancel()
@@ -210,7 +210,7 @@ class BumpCog(commands.Cog):
         elif self.waiterindex == 1:
             self.waiterindex = 2
         elif self.waiterindex == 2:
-            await self.msg_channel.send(f"Bump now with `!d bump`")
+            await self.msg_channel.send(f"Bump now with `/bump`")
             self.waiterindex = 0
             self.idlewaiter.start()
             self.waitminuteswaiter.cancel()
@@ -224,11 +224,11 @@ class BumpCog(commands.Cog):
         elif self.idleindex == 1:
             self.time_idled += 2
             if self.time_idled < 20:
-                await self.msg_channel.send(f"Idled for {self.time_idled} minutes. Bump now with `!d bump`")
+                await self.msg_channel.send(f"Idled for {self.time_idled} minutes. Bump now with `/bump`")
             if self.time_idled == 20:
-                await self.msg_channel.send(f"{self.bumprole.mention} Idled for {self.time_idled} minutes. Bump now with `!d bump`")
+                await self.msg_channel.send(f"{self.bumprole.mention} Idled for {self.time_idled} minutes. Bump now with `/bump`")
             if self.time_idled > 20:
-                await self.msg_channel.send(f"Idled for {self.time_idled} minutes. Bump now with `!d bump`")
+                await self.msg_channel.send(f"Idled for {self.time_idled} minutes. Bump now with `/bump`")
 
 def setup(bot):
     bot.add_cog(BumpCog(bot))
