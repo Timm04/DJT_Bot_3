@@ -794,10 +794,10 @@ class Restoration(commands.Cog):
         """Command to download all emoji to data/emojis/"""
 
         original_guild = self.bot.get_guild(929164771784290324)
-        emoji_assets = [(emoji.name, emoji.url) for emoji in original_guild.emojis]
+        emoji_assets = [emoji for emoji in original_guild.emojis]
         for emoji_asset in emoji_assets:
             await asyncio.sleep(1)
-            await emoji_asset[1].save(f"data/emojis/full_backup/{emoji_asset[0]}")
+            await emoji_asset.save(f"data/emojis/full_backup/{emoji_asset.name + emoji_asset.url[-4:]}")
         await ctx.send("Downloaded emoji.")
 
 
