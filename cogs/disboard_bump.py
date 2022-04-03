@@ -64,6 +64,7 @@ class BumpCog(commands.Cog):
         return minutes_left
 
     async def increment_leaderboard(self, userid):
+        userid = str(userid)
         self.s3_client.download_file('djtbot', "bumping/bumpleaderboard.json", 'data/bumpleaderboard.json')
 
         with open("data/bumpleaderboard.json") as json_file:
@@ -155,19 +156,19 @@ class BumpCog(commands.Cog):
 
                     await self.savetime(int(self.wait_time))
 
-        elif message.channel.id == bump_channel_id and message.content == "/bump":
-            await asyncio.sleep(8)
-            if self.idlewaiter.is_running() or self.startwaiter.is_running():
-                await self.msg_channel.send("Disboard appears to be offline. Simulating successful bump.")
-                self.waiterindex = 0
-                self.starterindex = 0
-                self.bumperindex = 0
-                self.idleindex = 0
-                self.startwaiter.cancel()
-                self.waitminuteswaiter.cancel()
-                self.idlewaiter.cancel()
-                self.bumpwaiter.start()
-                await self.savetime()
+        # elif message.channel.id == bump_channel_id and message.content == "/bump":
+        #     await asyncio.sleep(8)
+        #     if self.idlewaiter.is_running() or self.startwaiter.is_running():
+        #         await self.msg_channel.send("Disboard appears to be offline. Simulating successful bump.")
+        #         self.waiterindex = 0
+        #         self.starterindex = 0
+        #         self.bumperindex = 0
+        #         self.idleindex = 0
+        #         self.startwaiter.cancel()
+        #         self.waitminuteswaiter.cancel()
+        #         self.idlewaiter.cancel()
+        #         self.bumpwaiter.start()
+        #         await self.savetime()
 
     @tasks.loop(minutes=121.0)
     async def bumpwaiter(self):
@@ -215,14 +216,14 @@ class BumpCog(commands.Cog):
             self.idlewaiter.start()
             self.waitminuteswaiter.cancel()
 
-    @tasks.loop(minutes=2.0)
+    @tasks.loop(minutes=120.0)
     async def idlewaiter(self):
         """ After nothing has been done for some time. """
         if self.idleindex == 0:
             self.idleindex = 1
             self.time_idled = 0
         elif self.idleindex == 1:
-            self.time_idled += 2
+            self.time_idled += 120
             if self.time_idled < 20:
                 await self.msg_channel.send(f"Idled for {self.time_idled} minutes. Bump now with `/bump`")
             if self.time_idled == 20:

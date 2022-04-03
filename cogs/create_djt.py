@@ -279,6 +279,7 @@ class Restoration(commands.Cog):
         quiz_god_role = discord.utils.get(ctx.guild.roles, name='Quiz God')
         kotoba_role = discord.utils.get(ctx.guild.roles, name='Kotoba')
         disboard_role = discord.utils.get(ctx.guild.roles, name='DISBOARD.org')
+        emoji_role = discord.utils.get(ctx.guild.roles, name='Emoji')
 
         await unranked_role.edit(hoist=True)
         await asyncio.sleep(1)
@@ -305,7 +306,9 @@ class Restoration(commands.Cog):
         await mod_role.edit(permissions=discord.Permissions(permissions=1237328006),
                             reason="Give mod rights to mod role.")
         await asyncio.sleep(1)
-        await everyone_role.edit(permissions=discord.Permissions(permissions=70635201), reason="Set default role.")
+        await everyone_role.edit(permissions=discord.Permissions(permissions=274982096577), reason="Set default role.")
+        await asyncio.sleep(1)
+        await emoji_role.edit(permissions=discord.Permissions(permissions=1073741824), reason="Give emoji permissions")
         await asyncio.sleep(1)
 
         qm = await ctx.guild.fetch_member(user_ids["QM"])
@@ -790,7 +793,7 @@ class Restoration(commands.Cog):
     async def download_emoji(self, ctx):
         """Command to download all emoji to data/emojis/"""
 
-        original_guild = self.bot.get_guild(862723250676170852)
+        original_guild = self.bot.get_guild(929164771784290324)
         emoji_assets = [(emoji.name, emoji.url) for emoji in original_guild.emojis]
         for emoji_asset in emoji_assets:
             await asyncio.sleep(1)
