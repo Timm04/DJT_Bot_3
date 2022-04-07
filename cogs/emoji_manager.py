@@ -125,7 +125,7 @@ class EmojiManagement(commands.Cog):
                     await log_channel.send(f"**{performing_member}** just created the emoji **{emoji_created.name}**.")
                     return
                 elif not max_emoji_reached:
-                    await log_channel.send(f"**{performing_member}** just created the emoji **{emoji_created.name}** ({10-len(user_owned_emoji)}/{allowed_emoji_count} slots left).")
+                    await log_channel.send(f"**{performing_member}** just created the emoji **{emoji_created.name}** ({allowed_emoji_count-len(user_owned_emoji)}/{allowed_emoji_count} slots left).")
                     return
                 else:
                     await log_channel.send(f"**{performing_member}** just tried to create the emoji **{emoji_created.name}** but their maximum slots were reached.")
