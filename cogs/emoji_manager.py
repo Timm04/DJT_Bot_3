@@ -119,12 +119,13 @@ class EmojiManagement(commands.Cog):
                 emoji_created = entry.target
                 all_emojis = await guild.fetch_emojis()
                 user_owned_emoji = [emoji for emoji in all_emojis if emoji.user.id == performing_member.id]
-                max_emoji_reached = len(user_owned_emoji) > 10
+                allowed_emoji_count = 15
+                max_emoji_reached = len(user_owned_emoji) > allowed_emoji_count
                 if full_permissions:
                     await log_channel.send(f"**{performing_member}** just created the emoji **{emoji_created.name}**.")
                     return
                 elif not max_emoji_reached:
-                    await log_channel.send(f"**{performing_member}** just created the emoji **{emoji_created.name}** ({10-len(user_owned_emoji)}/10 slots left).")
+                    await log_channel.send(f"**{performing_member}** just created the emoji **{emoji_created.name}** ({10-len(user_owned_emoji)}/{allowed_emoji_count} slots left).")
                     return
                 else:
                     await log_channel.send(f"**{performing_member}** just tried to create the emoji **{emoji_created.name}** but their maximum slots were reached.")
