@@ -189,15 +189,13 @@ class EmojiManagement(commands.Cog):
     #                 await self.blacklist_member(performing_member)
     #                 return
 
-
-
     async def blacklist_member(self, member):
         log_channel = discord.utils.get(self.myguild.channels, name="otaku")
         emoji_role = discord.utils.get(self.myguild.roles, name="Emoji")
         await asyncio.sleep(1)
         await member.remove_roles(emoji_role)
         await asyncio.sleep(1)
-        await log_channel.send(f"**{member}** attempted to delete an emoji and lost emoji permissions.")
+        await log_channel.send(f"**{member}** attempted to delete an emoji and lost emoji permissions or was otherwise blacklisted.")
 
         blacklisted_user_ids = await self.download_file("emoji_blacklisted_users.json")
         blacklisted_user_ids.append(member.id)
@@ -228,7 +226,11 @@ class EmojiManagement(commands.Cog):
     @commands.command(hidden=True)
     @is_admin_or_mod()
     async def give_emoji(self, ctx, user_id):
-        member = self.myguild.get_member(user_id)
+        member = self.myguild.get_member(int(user_id))
+        try:
+            await self.unblacklist_member(ctx, user_id)
+        except ValueError:
+            pass
         emoji_role = discord.utils.get(self.myguild.roles, name="Emoji")
         await member.add_roles(emoji_role)
         await ctx.send(f"Gave {member} the Emoji role.")
@@ -236,12 +238,11 @@ class EmojiManagement(commands.Cog):
     @commands.command(hidden=True)
     @is_admin_or_mod()
     async def remove_emoji(self, ctx, user_id):
-        member = self.myguild.get_member(user_id)
+        member = self.myguild.get_member(int(user_id))
+        await self.blacklist_member(member)
         emoji_role = discord.utils.get(self.myguild.roles, name="Emoji")
         await member.remove_roles(emoji_role)
         await ctx.send(f"Removed the Emoji role from {member}.")
-
-
 
 def setup(bot):
     bot.add_cog(EmojiManagement(bot))
