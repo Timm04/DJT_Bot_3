@@ -13,6 +13,15 @@ with open(f"cogs/guild_data.json") as json_file:
     guild_id = data_dict["guild_id"]
     admin_role_ids = [data_dict["admin_role_id"], data_dict["mod_role_id"]]
     allowed_role_ids = data_dict["custom_emoji_permission"]
+
+def is_admin_or_mod():
+    async def predicate(ctx):
+        run_command = False
+        for role in ctx.author.roles:
+            if role.id == admin_role_ids[1] or role.id == admin_role_ids[2]:
+                run_command = True
+        return run_command
+    return commands.check(predicate)
 #############################################################
 
 class EmojiManagement(commands.Cog):
@@ -215,6 +224,23 @@ class EmojiManagement(commands.Cog):
                     await asyncio.sleep(1)
                     await member.add_roles(emoji_role)
                     print(f"Gave emoji role to {member.name}")
+
+    @commands.command(hidden=True)
+    @is_admin_or_mod()
+    async def give_emoji(self, ctx, user_id):
+        member = self.myguild.get_member(user_id)
+        emoji_role = discord.utils.get(self.myguild.roles, name="Emoji")
+        await member.add_roles(emoji_role)
+        await ctx.send(f"Gave {member} the Emoji role.")
+
+    @commands.command(hidden=True)
+    @is_admin_or_mod()
+    async def remove_emoji(self, ctx, user_id):
+        member = self.myguild.get_member(user_id)
+        emoji_role = discord.utils.get(self.myguild.roles, name="Emoji")
+        await member.remove_roles(emoji_role)
+        await ctx.send(f"Removed the Emoji role from {member}.")
+
 
 
 def setup(bot):

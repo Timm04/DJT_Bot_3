@@ -35,6 +35,7 @@ class Anime(commands.Cog):
     async def on_ready(self):
         self.myguild = self.bot.get_guild(guild_id)
         self.anime_channel = discord.utils.get(self.myguild.channels, name="anime")
+        self.mod_channel = discord.utils.get(self.myguild.channels, name="mod")
         await asyncio.sleep(600)
         await self.create_rules_post()
         self.update_posts.start()
@@ -116,7 +117,7 @@ class Anime(commands.Cog):
             else:
                 watched_anime.append(anime_code)
                 anime_leaderboard[user_id] = watched_anime
-        await self.anime_channel.send(
+        await self.mod_channel.send(
             f"{ctx.author} (ID:{ctx.author.id}) just created the following review for the anime {anime_name}:"
             f"\n`{review}`")
         await self.anime_channel.send(f"Awarded a point to {ctx.author.mention}: {len(watched_anime) - 1} -> {len(watched_anime)}")

@@ -254,6 +254,11 @@ class Restoration(commands.Cog):
 
         for role_name in djt_roles:
             await asyncio.sleep(1)
+
+            if role_name == "VN Manager" or role_name == "Admin" or role_name == "Mod":
+                await ctx.guild.create_role(name=role_name, colour=djt_roles[role_name], mentionable=True)
+                continue
+
             await ctx.guild.create_role(name=role_name, colour=djt_roles[role_name])
 
     @commands.command(hidden=True)
@@ -306,7 +311,7 @@ class Restoration(commands.Cog):
         await mod_role.edit(permissions=discord.Permissions(permissions=1237328006),
                             reason="Give mod rights to mod role.")
         await asyncio.sleep(1)
-        await everyone_role.edit(permissions=discord.Permissions(permissions=274982096577), reason="Set default role.")
+        await everyone_role.edit(permissions=discord.Permissions(permissions=277129580225), reason="Set default role.")
         await asyncio.sleep(1)
         await emoji_role.edit(permissions=discord.Permissions(permissions=1073741824), reason="Give emoji permissions")
         await asyncio.sleep(1)
