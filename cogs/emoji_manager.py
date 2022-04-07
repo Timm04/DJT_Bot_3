@@ -18,7 +18,7 @@ def is_admin_or_mod():
     async def predicate(ctx):
         run_command = False
         for role in ctx.author.roles:
-            if role.id == admin_role_ids[1] or role.id == admin_role_ids[2]:
+            if role.id == admin_role_ids[0] or role.id == admin_role_ids[1]:
                 run_command = True
         return run_command
     return commands.check(predicate)
