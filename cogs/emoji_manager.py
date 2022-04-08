@@ -132,63 +132,39 @@ class EmojiManagement(commands.Cog):
                     await emoji_created.delete()
                     return
 
-    # @commands.Cog.listener()
-    # async def on_guild_stickers_update(self, guild, stickers_before, stickers_after):
-    #     log_channel = discord.utils.get(guild.channels, name="otaku")
-    #
-    #     sticker_actions = [discord.AuditLogAction.sticker_update,
-    #                      discord.AuditLogAction.sticker_delete,
-    #                      discord.AuditLogAction.sticker_create]
-    #
-    #     async for entry in guild.audit_logs(limit=5):
-    #         performing_member = entry.user
-    #
-    #         if performing_member.id == self.bot.user.id:
-    #             print("Reverted sticker action.")
-    #             return
-    #
-    #         full_permissions = await self.has_full_emoji_permissions(performing_member.roles)
-    #
-    #         if entry.action in sticker_actions:
-    #             print(f"{performing_member} performed a sticker update.")
-    #
-    #         ###########
-    #         # Attempting to rename a sticker
-    #         if entry.action == sticker_actions[0]:
-    #             sticker_changed = await guild.fetch_sticker(entry.target.id)
-    #             action_allowed = sticker_changed.user.id == performing_member.id
-    #
-    #             if action_allowed or full_permissions:
-    #                 await asyncio.sleep(2)
-    #                 await log_channel.send(f"**{performing_member}** changed the sticker name **{entry.before.name}** to **{entry.after.name}**.")
-    #                 return
-    #
-    #             else:
-    #                 await asyncio.sleep(2)
-    #                 await log_channel.send(f"**{performing_member}** attempted to change the sticker name **{entry.before.name}** to **{entry.after.name}** (but was not permitted to).")
-    #                 await asyncio.sleep(2)
-    #                 await sticker_changed.edit(name=entry.before.name)
-    #                 return
-    #
-    #         ###########
-    #         # Attempting to delete an emoji
-    #         elif entry.action == sticker_actions[1]:
-    #             sticker_deleted = [sticker for sticker in stickers_before if sticker not in stickers_after][0]
-    #
-    #             full_permissions = False
-    #             if full_permissions:
-    #                 await log_channel.send(f"**{performing_member}** just deleted the sticker **{sticker_deleted.name}**.")
-    #                 return
-    #
-    #             else:
-    #                 await asyncio.sleep(2)
-    #                 await log_channel.send(f"**{performing_member}** attempted to delete the sticker **{sticker_deleted.name}** (but was not permitted to).")
-    #                 await asyncio.sleep(2)
-    #                 sticker_delete_image = await sticker_deleted.url
-    #
-    #                 await guild.create_sticker(name=sticker_deleted.name, emoji=sticker_deleted.emoji, file=sticker_delete_image)
-    #                 await self.blacklist_member(performing_member)
-    #                 return
+    @commands.Cog.listener()
+    async def on_guild_stickers_update(self, guild, stickers_before, stickers_after):
+        log_channel = discord.utils.get(guild.channels, name="otaku")
+
+        sticker_actions = [discord.AuditLogAction.sticker_update,
+                         discord.AuditLogAction.sticker_delete,
+                         discord.AuditLogAction.sticker_create]
+
+        async for entry in guild.audit_logs(limit=5):
+            performing_member = entry.user
+
+            if performing_member.id == self.bot.user.id:
+                print("Reverted sticker action.")
+                return
+
+            full_permissions = await self.has_full_emoji_permissions(performing_member.roles)
+
+            if entry.action in sticker_actions:
+                print(f"{performing_member} performed a sticker update.")
+
+            ###########
+            # Attempting to delete a sticker
+            if entry.action == sticker_actions[1]:
+                sticker_deleted = [sticker for sticker in stickers_before if sticker not in stickers_after][0]
+
+                if full_permissions:
+                    await log_channel.send(f"**{performing_member}** just deleted the sticker **{sticker_deleted.name}**.")
+                    return
+
+                else:
+                    await log_channel.send(f"**{performing_member}** deleted the sticker **{sticker_deleted.name}** and lost emoji permissions.")
+                    await self.blacklist_member(performing_member)
+                    return
 
     async def blacklist_member(self, member):
         log_channel = discord.utils.get(self.myguild.channels, name="otaku")
