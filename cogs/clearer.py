@@ -25,9 +25,31 @@ class Deleter(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.myguild = self.bot.get_guild(guild_id)
+        self.otaku_channel = discord.utils.get(self.myguild.channels, name='otaku')
         self.clear_channel.start()
         await asyncio.sleep(30)
         self.clear_curse_words_loop.start()
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        if not message.channel == self.otaku_channel:
+            return
+
+        if message.attachments:
+            for attachment in message.attachments:
+                if attachment.content_type == "image/gif":
+                    await message.delete()
+                    await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+
+        if message.embeds:
+            for embed in message.embeds:
+                if embed.thumbnail.url.endswith(".gif"):
+                    await message.delete()
+                    await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+
+        if "https://tenor.com/view/" in message.content:
+            await message.delete()
+            await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
 
     @tasks.loop(minutes=300)
     async def clear_channel(self):
