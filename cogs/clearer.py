@@ -41,12 +41,6 @@ class Deleter(commands.Cog):
                     await message.delete()
                     await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
 
-        if message.embeds:
-            for embed in message.embeds:
-                if embed.thumbnail.url.endswith(".gif"):
-                    await message.delete()
-                    await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
-
         if "https://tenor.com/view/" in message.content:
             await message.delete()
             await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
@@ -54,6 +48,12 @@ class Deleter(commands.Cog):
         if "http" in message.content and ".gif" in message.content:
             await message.delete()
             await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+
+        if message.embeds:
+            for embed in message.embeds:
+                if embed.thumbnail.url.endswith(".gif"):
+                    await message.delete()
+                    await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
 
     @commands.Cog.listener()
     async def on_message_edit(self, message_before: discord.Message, message_after: discord.Message):
