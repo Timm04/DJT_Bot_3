@@ -51,6 +51,10 @@ class Deleter(commands.Cog):
             await message.delete()
             await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
 
+        if "http" in message.content and ".gif" in message.content:
+            await message.delete()
+            await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+
     @tasks.loop(minutes=300)
     async def clear_channel(self):
         artwork_channel = discord.utils.get(self.myguild.channels, name="artwork")
