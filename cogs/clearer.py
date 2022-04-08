@@ -51,9 +51,12 @@ class Deleter(commands.Cog):
 
         if message.embeds:
             for embed in message.embeds:
-                if embed.thumbnail.url.endswith(".gif"):
-                    await message.delete()
-                    await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+                try:
+                    if embed.thumbnail.url.endswith(".gif"):
+                        await message.delete()
+                        await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+                except AttributeError:
+                    pass
 
     @commands.Cog.listener()
     async def on_message_edit(self, message_before: discord.Message, message_after: discord.Message):
