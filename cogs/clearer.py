@@ -55,6 +55,10 @@ class Deleter(commands.Cog):
             await message.delete()
             await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
 
+    @commands.Cog.listener()
+    async def on_message_edit(self, message_before: discord.Message, message_after: discord.Message):
+        await self.on_message(message_after)
+
     @tasks.loop(minutes=300)
     async def clear_channel(self):
         artwork_channel = discord.utils.get(self.myguild.channels, name="artwork")
