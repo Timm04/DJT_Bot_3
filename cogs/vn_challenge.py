@@ -211,11 +211,13 @@ class VNChallenge(commands.Cog):
     async def compute_points(self, list_of_read):
         newpoints = 0
         for readpair in list_of_read:
-            if readpair[1] is False:
+            if readpair[1] is False and len(readpair[0]) == 7:
                 newpoints += 1
-            elif len(readpair[0]) == 7:
+            elif readpair[1] is True and len(readpair[0]) == 7:
                 newpoints += 2
-            else:
+            elif readpair[1] is False and len(readpair[0]) == 15:
+                newpoints += 2
+            elif readpair[1] is True and len(readpair[0]) == 15:
                 newpoints += 3
 
         return newpoints
