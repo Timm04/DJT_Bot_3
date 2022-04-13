@@ -40,14 +40,24 @@ class Deleter(commands.Cog):
                 if attachment.content_type == "image/gif":
                     await message.delete()
                     await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+                    return
+
+        if "https://imgur.com/" in message.content and message.embeds:
+            for embed in message.embeds:
+                if embed.type == "gifv":
+                    await message.delete()
+                    await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+                    return
 
         if "https://tenor.com/view/" in message.content:
             await message.delete()
             await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+            return
 
         if "http" in message.content and ".gif" in message.content:
             await message.delete()
             await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+            return
 
         if message.embeds:
             for embed in message.embeds:
@@ -55,6 +65,7 @@ class Deleter(commands.Cog):
                     if embed.thumbnail.url.endswith(".gif"):
                         await message.delete()
                         await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+                        return
                 except AttributeError:
                     pass
 

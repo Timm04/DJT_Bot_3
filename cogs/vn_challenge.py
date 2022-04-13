@@ -432,5 +432,18 @@ class VNChallenge(commands.Cog):
         except discord.errors.HTTPException:
             await ctx.send("Message exceeds 2000 characters.")
 
+    @commands.command(hidden=True)
+    @is_vn_manager()
+    async def recalculate_points(self, ctx):
+        vn_challenge_dict = await self.download_file("vnchallenge.json")
+        vn_challenge_dict_new = dict()
+        for user_id, (read_list, points) in vn_challenge_dict.items():
+            new_points = await self.compute_points(read_list)
+            new_entry = [read_list, new_points]
+            vn_challenge_dict_new[user_id] = new_entry
+
+        await self.upload_file(vn_challenge_dict_new, "vnchallenge.json")
+        await ctx.send("Done.")
+
 def setup(bot):
     bot.add_cog(VNChallenge(bot))
