@@ -42,7 +42,7 @@ class Deleter(commands.Cog):
                     await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
                     return
 
-        if "https://imgur.com/" in message.content and message.embeds:
+        if message.embeds:
             for embed in message.embeds:
                 if embed.type == "gifv":
                     await message.delete()
