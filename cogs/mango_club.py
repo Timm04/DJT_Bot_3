@@ -137,9 +137,9 @@ class manga(commands.Cog):
 
         manga_pins = await self.manga_channel.pins()
         for pin in manga_pins:
-            if pin.content.startswith("Manga leaderboard:"):
+            if pin.content.startswith("Manga leaderboard:") and pin.author == self.bot.user:
                 leaderboard_pins.append(pin)
-            elif pin.content.startswith("All voted mangas:"):
+            elif pin.content.startswith("All voted mangas:") and pin.author == self.bot.user:
                 database_pins.append(pin)
 
         database_msg = "All voted mangas:\n"

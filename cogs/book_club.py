@@ -94,7 +94,7 @@ class BookClub(commands.Cog):
         book_channel = discord.utils.get(self.myguild.channels, name="books")
 
         pins = await book_channel.pins()
-        old_pins = [pin for pin in pins if pin.content.startswith("LEADERBOARD")]
+        old_pins = [pin for pin in pins if pin.content.startswith("LEADERBOARD") and pin.author == self.bot.user]
         new_pins = []
         sorted_leaderboard = sorted(leaderboard.items(), key=lambda item: int(item[1][:-1]), reverse=True)
         message_count = 0

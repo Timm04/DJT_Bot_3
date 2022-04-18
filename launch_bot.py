@@ -22,7 +22,7 @@ for filename in os.listdir('./cogs'):
         djtbot.load_extension(f'cogs.{filename[:-3]}')
         print(f"Loaded the following cog: {filename}")
 
-# djtbot.load_extension(f'cogs.create_djt')
+# djtbot.load_extension(f'cogs.vn_challenge')
 
 with open("token_new.txt") as token_file:
     bot_token = token_file.read()

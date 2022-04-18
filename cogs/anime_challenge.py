@@ -133,9 +133,9 @@ class Anime(commands.Cog):
 
         anime_pins = await self.anime_channel.pins()
         for pin in anime_pins:
-            if pin.content.startswith("Anime leaderboard:"):
+            if pin.content.startswith("Anime leaderboard:") and pin.author == self.bot.user:
                 leaderboard_pins.append(pin)
-            elif pin.content.startswith("All voted animes:"):
+            elif pin.content.startswith("All voted animes:") and pin.author == self.bot.user:
                 database_pins.append(pin)
 
         database_msg = "All voted animes:\n"
