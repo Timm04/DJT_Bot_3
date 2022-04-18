@@ -490,10 +490,6 @@ class Restoration(commands.Cog):
                 await asyncio.sleep(1)
                 await message.unpin()
 
-        monthly_vn_message = await vn_channel.send("Monthly VN message placeholder.")
-        await asyncio.sleep(1)
-        quarterly_vn_message = await vn_channel.send("Quarterly VN message placeholder.")
-        await asyncio.sleep(1)
         leaderboard_1 = await vn_channel.send("Leaderboard 1 Placeholder")
         await asyncio.sleep(1)
         leaderboard_2 = await vn_channel.send("Leaderboard 2 Placeholder")
@@ -503,10 +499,6 @@ class Restoration(commands.Cog):
         leaderboard_4 = await vn_channel.send("Leaderboard 4 Placeholder")
         await asyncio.sleep(1)
 
-        await quarterly_vn_message.pin()
-        await asyncio.sleep(1)
-        await monthly_vn_message.pin()
-        await asyncio.sleep(1)
         await leaderboard_4.pin()
         await asyncio.sleep(1)
         await leaderboard_3.pin()
@@ -516,8 +508,6 @@ class Restoration(commands.Cog):
         await leaderboard_1.pin()
         await asyncio.sleep(1)
 
-        data_dict["monthly_vn_message"] = monthly_vn_message.id
-        data_dict["quarterly_vn_message"] = quarterly_vn_message.id
         data_dict["leaderboard_1"] = leaderboard_1.id
         data_dict["leaderboard_2"] = leaderboard_2.id
         data_dict["leaderboard_3"] = leaderboard_3.id

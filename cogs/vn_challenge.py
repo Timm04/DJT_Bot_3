@@ -53,8 +53,6 @@ class VNChallenge(commands.Cog):
     async def on_ready(self):
         self.myguild = self.bot.get_guild(guild_id)
         self.vnchannel = self.bot.get_channel(vn_channel_id)
-        self.monthly_vn_message = await self.vnchannel.fetch_message(monthly_vn_message_id)
-        self.quarterly_vn_message = await self.vnchannel.fetch_message(quarterly_vn_message_id)
 
         self.leaderboardmessage = await self.vnchannel.fetch_message(leaderboardmessage_id)
         self.leaderboardmessage2 = await self.vnchannel.fetch_message(leaderboardmessage2_id)
@@ -84,8 +82,15 @@ class VNChallenge(commands.Cog):
             self.s3_client.upload_file(f"data/{filename}", "djtbot", f"vnchallenge/{filename}")
             print("Uploaded file.")
 
-    async def update_message(self, data_dict, message, message_title):
+    async def update_message(self, data_dict, message_title):
+        vn_pins = await self.vnchannel.pins()
+        message_pins = []
+        for pin in vn_pins:
+            if pin.author == self.bot.user and pin.content.startswith(message_title):
+                message_pins.append(pin)
+
         mymessage = [message_title]
+        message_index = 0
         for index, timecode in enumerate(data_dict):
             counter = index + 1
             vn_name = data_dict[timecode][0]
@@ -93,9 +98,23 @@ class VNChallenge(commands.Cog):
             code = data_dict[timecode][2]
             current_line = f"{counter}. **{timecode}** {vn_name} <{vndb_link}> Code: {code}"
             mymessage.append(current_line)
+            if len("\n".join(mymessage)) > 1900:
+                try:
+                    await message_pins[message_index].edit(content="\n".join(mymessage))
+                except IndexError:
+                    message_pins.append(await self.vnchannel.send("Placeholder Message"))
+                    await message_pins[message_index].edit(content="\n".join(mymessage))
+                    await message_pins[message_index].pin()
+                mymessage = [message_title]
+                message_index += 1
 
-        new_message = "\n".join(mymessage)
-        await message.edit(content=new_message)
+        if mymessage:
+            try:
+                await message_pins[message_index].edit(content="\n".join(mymessage))
+            except IndexError:
+                message_pins.append(await self.vnchannel.send("Placeholder Message"))
+                await message_pins[message_index].edit(content="\n".join(mymessage))
+                await message_pins[message_index].pin()
 
     @commands.command()
     async def bingo(self, ctx):
@@ -111,7 +130,7 @@ class VNChallenge(commands.Cog):
 
             monthly_vn_dict[year_month] = (vn_name, vndb_link, code)
 
-            await self.update_message(monthly_vn_dict, self.monthly_vn_message, "Past Monthly VNs:")
+            await self.update_message(monthly_vn_dict, "Past Monthly VNs:")
 
             await self.upload_file(monthly_vn_dict, "monthlyvns.json")
 
@@ -129,7 +148,7 @@ class VNChallenge(commands.Cog):
 
             quarterly_vn_dict[year_month] = (vn_name, vndb_link, code)
 
-            await self.update_message(quarterly_vn_dict, self.quarterly_vn_message, "Past Quarterly VNs:")
+            await self.update_message(quarterly_vn_dict, "Past Quarterly VNs:")
 
             await self.upload_file(quarterly_vn_dict, "quarterlyvns.json")
 
@@ -146,7 +165,7 @@ class VNChallenge(commands.Cog):
 
         monthly_vn_dict.pop(year_month, None)
 
-        await self.update_message(monthly_vn_dict, self.monthly_vn_message, "Past Monthly VNs:")
+        await self.update_message(monthly_vn_dict, "Past Monthly VNs:")
 
         await self.upload_file(monthly_vn_dict, "monthlyvns.json")
 
@@ -160,7 +179,7 @@ class VNChallenge(commands.Cog):
 
         quarterly_vn_dict.pop(year_month, None)
 
-        await self.update_message(quarterly_vn_dict, self.quarterly_vn_message, "Past Quarterly VNs:")
+        await self.update_message(quarterly_vn_dict, "Past Quarterly VNs:")
 
         await self.upload_file(quarterly_vn_dict, "quarterlyvns.json")
 
@@ -426,8 +445,8 @@ class VNChallenge(commands.Cog):
         if await self.updateleaderboard(vn_challenge_dict, monthly_vn_dict, quarterly_vn_dict) == True:
             await ctx.send("Updated leaderboard.")
         try:
-            await self.update_message(monthly_vn_dict, self.monthly_vn_message, "Past Monthly VNs:")
-            await self.update_message(quarterly_vn_dict, self.quarterly_vn_message, "Past Quarterly VNs:")
+            await self.update_message(monthly_vn_dict, "Past Monthly VNs:")
+            await self.update_message(quarterly_vn_dict, "Past Quarterly VNs:")
 
         except discord.errors.HTTPException:
             await ctx.send("Message exceeds 2000 characters.")
