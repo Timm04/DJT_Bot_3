@@ -333,7 +333,7 @@ class VNChallenge(commands.Cog):
         for vncode in vncodes:
             for datecode in monthly_vn_dict:
                 if vncode == monthly_vn_dict[datecode][2]:
-                    await ctx.send(f"Was the VN with the code {vncode} read in the relevant period? y/n")
+                    await ctx.send(f"Was the VN with the code {vncode} read in the relevant period ({datecode})? y/n")
                     message = await self.bot.wait_for('message', timeout=25.0, check=response_check)
                     if message.content == "y":
                         vntoadd = [datecode, True]
@@ -346,7 +346,7 @@ class VNChallenge(commands.Cog):
 
             for datecode in quarterly_vn_dict:
                 if vncode == quarterly_vn_dict[datecode][2]:
-                    await ctx.send(f"Was the VN with the code {vncode} read in the relevant period? y/n")
+                    await ctx.send(f"Was the VN with the code {vncode} read in the relevant period ({datecode})? y/n")
                     message = await self.bot.wait_for('message', timeout=25.0, check=response_check)
                     if message.content == "y":
                         vntoadd = [datecode, True]
