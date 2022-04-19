@@ -5,6 +5,7 @@ from discord.ext import commands
 from discord.ext import tasks
 import boto3
 import json
+import re
 
 #############################################################
 # Variables (Temporary)
@@ -48,6 +49,8 @@ class EmojiManagement(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.myguild = self.bot.get_guild(guild_id)
+        self.emoji_usage_dict = await self.download_file("emoji_usage.json")
+        self.upload_emoji_usage.start()
         self.give_emoji_role.start()
 
     async def has_full_emoji_permissions(self, member_roles):
@@ -220,6 +223,51 @@ class EmojiManagement(commands.Cog):
         emoji_role = discord.utils.get(self.myguild.roles, name="Emoji")
         await member.remove_roles(emoji_role)
         await ctx.send(f"Removed the Emoji role from {member}.")
+
+    @commands.Cog.listener()
+    async def on_reaction_add(self, reaction, user):
+        if reaction.emoji in self.myguild.emojis:
+            self.emoji_usage_dict[reaction.emoji.name] = self.emoji_usage_dict.get(reaction.emoji.name, 0) + 1
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        results = re.findall(r"<:(.+?):\d+>", message.content)
+        results = set(results)
+        if results:
+            for result in results:
+                emoji = discord.utils.get(self.myguild.emojis, name=result)
+                if emoji:
+                    self.emoji_usage_dict[emoji.name] = self.emoji_usage_dict.get(emoji.name, 0) + 1
+
+    @tasks.loop(minutes=20.0)
+    async def upload_emoji_usage(self):
+        await self.upload_file(self.emoji_usage_dict, "emoji_usage.json")
+        print("Uploaded emoji usage.")
+
+    @commands.command()
+    @commands.cooldown(1, 240, commands.BucketType.user)
+    async def emojiusage(self, ctx):
+        """Give out server emoji statistics."""
+        lines = []
+
+        for emoji_name, uses in sorted(self.emoji_usage_dict.items(), key=lambda x: x[1], reverse=True):
+            emoji = discord.utils.get(self.myguild.emojis, name=emoji_name)
+            if emoji:
+                line = f"{str(emoji)} {uses} uses."
+                lines.append(line)
+
+        for emoji in self.myguild.emojis:
+            if emoji.name not in self.emoji_usage_dict:
+                line = f"{str(emoji)} 0 uses."
+                lines.append(line)
+
+        myembed = discord.Embed(title="DJT Emoji Usage Statistics.")
+        counter = 1
+        for line in lines:
+            myembed.add_field(name=f"{counter}.", value=f"{line}", inline=True)
+            counter += 1
+
+        await ctx.send(embed=myembed)
 
 def setup(bot):
     bot.add_cog(EmojiManagement(bot))
