@@ -6,7 +6,6 @@ import json
 import boto3
 import re
 import asyncio
-from datetime import date
 
 #############################################################
 # Variables (Temporary)
@@ -309,11 +308,18 @@ class VNChallenge(commands.Cog):
     @commands.command(hidden=True)
     @is_vn_manager()
     async def addvn(self, ctx, mention, *vncodes):
+        if not vncodes:
+            await ctx.send("VN list is empty. Exiting.")
+            return
+
         vn_challenge_dict = await self.download_file("vnchallenge.json")
         monthly_vn_dict = await self.download_file("monthlyvns.json")
         quarterly_vn_dict = await self.download_file("quarterlyvns.json")
 
-        current_date = str(date.today())[0:7]
+        def response_check(message):
+            responses = ["y", "n"]
+            return message.author.id == ctx.author.id and message.content in responses
+
         mentionid = re.findall(r"(\d+)", mention)[0]
 
         try:
@@ -327,48 +333,26 @@ class VNChallenge(commands.Cog):
         for vncode in vncodes:
             for datecode in monthly_vn_dict:
                 if vncode == monthly_vn_dict[datecode][2]:
-                    if datecode == current_date:
+                    await ctx.send(f"Was the VN with the code {vncode} read in the relevant period? y/n")
+                    message = await self.bot.wait_for('message', timeout=25.0, check=response_check)
+                    if message.content == "y":
                         vntoadd = [datecode, True]
                         read_vns.append(vntoadd)
                         vntitles.append(monthly_vn_dict[datecode][0])
-                    else:
+                    elif message.content == "n":
                         vntoadd = [datecode, False]
                         read_vns.append(vntoadd)
                         vntitles.append(monthly_vn_dict[datecode][0])
 
             for datecode in quarterly_vn_dict:
                 if vncode == quarterly_vn_dict[datecode][2]:
-                    begining_period = datecode[0:7]
-                    end_period = datecode[8:15]
-
-                    def nextmonth(shortMonth):
-                        return {'01': "02",
-                                '02': "03",
-                                '03': "04",
-                                '04': "05",
-                                '05': "06",
-                                '06': "07",
-                                '07': "08",
-                                '08': "09",
-                                '09': "10",
-                                '10': "11",
-                                '11': "12",
-                                '12': "01"}[shortMonth]
-
-                    next_month = nextmonth(datecode[5:7])
-                    if next_month == "01":
-                        next_year = str((int(datecode[0:4]) + 1))
-                    else:
-                        next_year = datecode[0:4]
-
-                    inter_period = f"{next_year}-{next_month}"
-                    periods = [begining_period, inter_period, end_period]
-
-                    if current_date in periods:
+                    await ctx.send(f"Was the VN with the code {vncode} read in the relevant period? y/n")
+                    message = await self.bot.wait_for('message', timeout=25.0, check=response_check)
+                    if message.content == "y":
                         vntoadd = [datecode, True]
                         read_vns.append(vntoadd)
                         vntitles.append(quarterly_vn_dict[datecode][0])
-                    else:
+                    elif message.content == "n":
                         vntoadd = [datecode, False]
                         read_vns.append(vntoadd)
                         vntitles.append(quarterly_vn_dict[datecode][0])
@@ -389,6 +373,10 @@ class VNChallenge(commands.Cog):
     @commands.command(hidden=True)
     @is_vn_manager()
     async def removevn(self, ctx, mention, *vncodes):
+        if not vncodes:
+            await ctx.send("VN list is empty. Exiting.")
+            return
+
         vn_challenge_dict = await self.download_file("vnchallenge.json")
         monthly_vn_dict = await self.download_file("monthlyvns.json")
         quarterly_vn_dict = await self.download_file("quarterlyvns.json")
