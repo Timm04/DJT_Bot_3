@@ -248,17 +248,22 @@ class EmojiManagement(commands.Cog):
     @commands.cooldown(1, 240, commands.BucketType.user)
     async def emojiusage(self, ctx):
         """Give out server emoji statistics."""
+        forbidden_channels = ["otaku", "nihongo", "artwork", "offtopic", "vn", "books", "anime", "manga", "event"]
+        if ctx.channel.name in forbidden_channels:
+            await ctx.send("Please use this command in the 'other' category.")
+            return
+
         lines = []
 
         for emoji_name, uses in sorted(self.emoji_usage_dict.items(), key=lambda x: x[1], reverse=True):
             emoji = discord.utils.get(self.myguild.emojis, name=emoji_name)
             if emoji:
-                line = f"{str(emoji)} {uses} uses."
+                line = f"{str(emoji)} {uses} uses"
                 lines.append(line)
 
         for emoji in self.myguild.emojis:
             if emoji.name not in self.emoji_usage_dict:
-                line = f"{str(emoji)} 0 uses."
+                line = f"{str(emoji)} 0 uses"
                 lines.append(line)
 
         myembed = discord.Embed(title="DJT Emoji Usage Statistics.")
