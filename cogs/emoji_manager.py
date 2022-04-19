@@ -262,10 +262,19 @@ class EmojiManagement(commands.Cog):
                 lines.append(line)
 
         myembed = discord.Embed(title="DJT Emoji Usage Statistics.")
+        current_field_string = []
         counter = 1
         for line in lines:
-            myembed.add_field(name=f"{counter}.", value=f"{line}", inline=True)
+            current_field_string.append(f"{counter}. {line}")
             counter += 1
+            combined_message = "\n".join(current_field_string)
+            if len(combined_message) > 900:
+                myembed.add_field(name=f"Emoji:", value=combined_message, inline=True)
+                current_field_string = []
+
+        if current_field_string:
+            combined_message = "\n".join(current_field_string)
+            myembed.add_field(name=f"Emoji:", value=combined_message, inline=True)
 
         await ctx.send(embed=myembed)
 
