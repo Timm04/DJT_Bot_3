@@ -32,6 +32,12 @@ class Deleter(commands.Cog):
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
+
+        allowed_roles = ["Server Booster", "大王", "大公", "公爵"]
+        for role in message.author.roles:
+            if role.name in allowed_roles:
+                return
+
         if not message.channel == self.otaku_channel:
             return
 
