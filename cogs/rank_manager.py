@@ -188,6 +188,20 @@ class RankManagement(commands.Cog):
 
         await ctx.send("Added the icon to your role.")
 
+    @commands.command()
+    async def removeicon(self, ctx: commands.Context):
+        custom_roles_dict = await self.download_file("customroles.json")
+        user_id = str(ctx.author.id)
+
+        if user_id not in custom_roles_dict:
+            await ctx.send("You don't seem to have a custom role set.")
+            return
+
+        custom_role = self.myguild.get_role(custom_roles_dict[user_id])
+
+        await custom_role.edit(icon=None)
+        await ctx.send("Removed your role icon.")
+
     @tasks.loop(minutes=120.0)
     async def roleremover(self):
         custom_roles_dict = await self.download_file("customroles.json")
