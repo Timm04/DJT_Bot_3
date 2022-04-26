@@ -185,7 +185,13 @@ class RankManagement(commands.Cog):
         custom_role = self.myguild.get_role(custom_roles_dict[user_id])
         icon_bytes = await icon.read()
 
-        await custom_role.edit(icon=icon_bytes)
+        try:
+            await custom_role.edit(icon=icon_bytes)
+
+        except discord.errors.HTTPException:
+            await ctx.send("The file has to be smaller than 256kb.")
+            return
+
         await ctx.send("Added the icon to your role.")
 
     @tasks.loop(minutes=120.0)

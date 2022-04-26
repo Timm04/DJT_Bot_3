@@ -45,24 +45,24 @@ class Deleter(commands.Cog):
             for attachment in message.attachments:
                 if attachment.content_type == "image/gif":
                     await message.delete()
-                    await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+                    await message.channel.send(f"{message.author.mention} Pass N1 or boost the server to post gifs in #otaku.")
                     return
 
         if message.embeds:
             for embed in message.embeds:
                 if embed.type == "gifv":
                     await message.delete()
-                    await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+                    await message.channel.send(f"{message.author.mention} Pass N1 or boost the server to post gifs in #otaku.")
                     return
 
         if "https://tenor.com/view/" in message.content:
             await message.delete()
-            await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+            await message.channel.send(f"{message.author.mention} Pass N1 or boost the server to post gifs in #otaku.")
             return
 
         if "http" in message.content and ".gif" in message.content:
             await message.delete()
-            await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+            await message.channel.send(f"{message.author.mention} Pass N1 or boost the server to post gifs in #otaku.")
             return
 
         if message.embeds:
@@ -70,7 +70,7 @@ class Deleter(commands.Cog):
                 try:
                     if embed.thumbnail.url.endswith(".gif"):
                         await message.delete()
-                        await message.channel.send(f"{message.author.mention} GIFs are not allowed in this channel.")
+                        await message.channel.send(f"{message.author.mention} Pass N1 or boost the server to post gifs in #otaku.")
                         return
                 except AttributeError:
                     pass
