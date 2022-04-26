@@ -96,18 +96,6 @@ class RankManagement(commands.Cog):
             await ctx.send("Please use a shorter role name. Restrict yourself to 7 symbols.")
             return
 
-        if role_name == "大王":
-            await ctx.send("Invalid role name.")
-            return
-
-        if role_name == "大公":
-            await ctx.send("Invalid role name.")
-            return
-
-        if role_name == "日本人":
-            await ctx.send("You are not!")
-            return
-
         color_match = re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', color_code)
         if not color_match:
             await ctx.send("Please enter a valid hex color code.")
@@ -121,6 +109,12 @@ class RankManagement(commands.Cog):
 
         custom_role_id = custom_roles_dict.get(string_member_id)
         custom_role = self.myguild.get_role(custom_role_id)
+
+        guild_role_names = [role.name for role in self.myguild.roles]
+        if role_name in guild_role_names:
+            await ctx.send("Invalid role name.")
+            return
+
         if custom_role_id and custom_role:
             await custom_role.edit(name=role_name, colour=discord.Colour(actual_color_code))
             await member.add_roles(custom_role)

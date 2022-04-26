@@ -788,10 +788,10 @@ class Restoration(commands.Cog):
     async def set_role_icons(self, ctx):
         role_picture_dict = {"大王": "dark_dark_red.png",
                              "大公": "dark_red.png",
-                             "公爵": "red.png",
-                             "侯爵": "orange.png",
-                             "伯爵 / N3": "blue.png",
-                             "子爵 / N4": "green.png",
+                             "公爵": "n1.png",
+                             "侯爵": "n2.png",
+                             "伯爵 / N3": "n3.png",
+                             "子爵 / N4": "n4.png",
                              "農奴 / Unranked": "reddit.png"}
 
         for rolename, filename in role_picture_dict.items():
@@ -800,6 +800,8 @@ class Restoration(commands.Cog):
                 image = image_file.read()
 
             await role.edit(icon=image)
+
+        print("Set role icon.")
 
 
 
