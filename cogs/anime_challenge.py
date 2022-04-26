@@ -80,6 +80,7 @@ class Anime(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def review(self, ctx, anime_code, *, review):
+        """<anime_code> <review> Review an anime for the anime challenge."""
         banned_list = self.pull_all_records("anime_banned_users.json")
         if str(ctx.author.id) in banned_list:
             await ctx.send("You are banned from the anime challenge.")
@@ -202,14 +203,14 @@ class Anime(commands.Cog):
                 await user.remove_roles(*all_anime_reward_roles)
                 await user.add_roles(anime_reward_role)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
     async def update_anime(self, ctx):
         await self.update_posts()
         await self.give_roles()
         await ctx.send("Done.")
 
-    @commands.command()
+    @commands.command(hidden=True)
     @is_anime_manager()
     async def clear_user(self, ctx, id):
         anime_leaderboard = self.pull_all_records("anime_leaderboard.json")
@@ -217,7 +218,7 @@ class Anime(commands.Cog):
         self.push_all_records(anime_leaderboard, "anime_leaderboard.json")
         await ctx.send(f"Removed user with the id {id} from the database")
 
-    @commands.command()
+    @commands.command(hidden=True)
     @is_anime_manager()
     async def ban_user(self, ctx, id):
         anime_leaderboard = self.pull_all_records("anime_leaderboard.json")

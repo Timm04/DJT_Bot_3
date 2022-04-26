@@ -149,6 +149,45 @@ class RankManagement(commands.Cog):
         custom_roles_dict.pop(str(ctx.author.id))
         await self.upload_file(custom_roles_dict, "customroles.json")
 
+    @commands.command()
+    async def makeicon(self, ctx: commands.Context):
+        """Create an icon for your custom role. Has to be a png with 1x1 resolution."""
+        member = await self.myguild.fetch_member(ctx.author.id)
+        custom_role_permission = False
+        for role in member.roles:
+            if role.id in custom_role_permission_role_ids:
+                custom_role_permission = True
+
+        if not custom_role_permission:
+            await ctx.send("You don't have custom role permission. Please pass the 大公 quiz.")
+            return
+
+        if not ctx.message.attachments:
+            await ctx.send("Please attach the image to the command call.")
+            return
+
+        icon = ctx.message.attachments[0]
+        if icon.content_type != "image/png":
+            await ctx.send("Please use a .png image.")
+            return
+
+        if not icon.height == icon.width:
+            await ctx.send("Height and width have to be equal.")
+            return
+
+        custom_roles_dict = await self.download_file("customroles.json")
+        user_id = str(ctx.author.id)
+
+        if user_id not in custom_roles_dict:
+            await ctx.send("You don't seem to have a custom role set. Please set one with `$makerole`.")
+            return
+
+        custom_role = self.myguild.get_role(custom_roles_dict[user_id])
+        icon_bytes = await icon.read()
+
+        await custom_role.edit(icon=icon_bytes)
+        await ctx.send("Added the icon to your role.")
+
     @tasks.loop(minutes=120.0)
     async def roleremover(self):
         custom_roles_dict = await self.download_file("customroles.json")

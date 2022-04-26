@@ -785,6 +785,25 @@ class Restoration(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
+    async def set_role_icons(self, ctx):
+        role_picture_dict = {"大王": "daiou.png",
+                             "大公": "taikou.png",
+                             "公爵": "n1.png",
+                             "侯爵": "n2.png",
+                             "伯爵 / N3": "n3.png",
+                             "子爵 / N4": "n4.png"}
+
+        for rolename, filename in role_picture_dict.items():
+            role = discord.utils.get(ctx.guild.roles, name=rolename)
+            with open(f"data/role_icons/{filename}", "rb") as image_file:
+                image = image_file.read()
+
+            await role.edit(icon=image)
+
+
+
+    @commands.command(hidden=True)
+    @commands.has_permissions(administrator=True)
     async def download_emoji(self, ctx):
         """Command to download all emoji to data/emojis/"""
 

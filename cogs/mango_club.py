@@ -84,6 +84,7 @@ class manga(commands.Cog):
     @commands.command()
     @commands.guild_only()
     async def review_manga(self, ctx, manga_code, *, review):
+        """<manga_code> <review> Review a Manga for the Manga challenge."""
         banned_list = self.pull_all_records("manga_banned_users.json")
         if str(ctx.author.id) in banned_list:
             await ctx.send("You are banned from the manga challenge.")
@@ -206,7 +207,7 @@ class manga(commands.Cog):
                 await user.remove_roles(*all_manga_reward_roles)
                 await user.add_roles(manga_reward_role)
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
     async def update_manga(self, ctx):
         await self.update_posts()
