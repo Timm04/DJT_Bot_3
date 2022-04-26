@@ -100,6 +100,7 @@ class NickName(commands.Cog):
 
 
     @commands.command()
+    @commands.guild_only()
     async def ikillthedevil(self, ctx, *, nickname):
         """Day counting nickname. Include XXXX as placeholder."""
 
@@ -138,6 +139,7 @@ class NickName(commands.Cog):
         await ctx.send("Changed nickname.")
 
     @commands.command()
+    @commands.guild_only()
     async def ifailed(self, ctx):
         """Reset the counter on a day counting nickname."""
 
@@ -157,11 +159,15 @@ class NickName(commands.Cog):
         await ctx.send("Reset counter.")
 
     @commands.command()
+    @commands.guild_only()
     async def iquit(self, ctx):
         """Stop automatically changing your nickname."""
 
         user_id = str(ctx.author.id)
-        self.delete_nick_record(user_id)
+        try:
+            self.delete_nick_record(user_id)
+        except KeyError:
+            return
         await ctx.author.edit(nick=None)
         await ctx.send("Deleted your nickname.")
 

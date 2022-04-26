@@ -786,12 +786,13 @@ class Restoration(commands.Cog):
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
     async def set_role_icons(self, ctx):
-        role_picture_dict = {"大王": "daiou.png",
-                             "大公": "taikou.png",
-                             "公爵": "n1.png",
-                             "侯爵": "n2.png",
-                             "伯爵 / N3": "n3.png",
-                             "子爵 / N4": "n4.png"}
+        role_picture_dict = {"大王": "dark_dark_red.png",
+                             "大公": "dark_red.png",
+                             "公爵": "red.png",
+                             "侯爵": "orange.png",
+                             "伯爵 / N3": "blue.png",
+                             "子爵 / N4": "green.png",
+                             "農奴 / Unranked": "reddit.png"}
 
         for rolename, filename in role_picture_dict.items():
             role = discord.utils.get(ctx.guild.roles, name=rolename)
