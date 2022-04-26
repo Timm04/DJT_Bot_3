@@ -190,6 +190,7 @@ class RankManagement(commands.Cog):
 
     @commands.command()
     async def removeicon(self, ctx: commands.Context):
+        "Remove custom role icon."
         custom_roles_dict = await self.download_file("customroles.json")
         user_id = str(ctx.author.id)
 
