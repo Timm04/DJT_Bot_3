@@ -110,17 +110,17 @@ class RankManagement(commands.Cog):
         custom_role_id = custom_roles_dict.get(string_member_id)
         custom_role = self.myguild.get_role(custom_role_id)
 
-        guild_role_names = [role.name for role in self.myguild.roles]
-        if role_name in guild_role_names:
-            await ctx.send("Invalid role name.")
-            return
-
         if custom_role_id and custom_role:
             await custom_role.edit(name=role_name, colour=discord.Colour(actual_color_code))
             await member.add_roles(custom_role)
             await ctx.send("Updated role.")
 
         else:
+            guild_role_names = [role.name for role in self.myguild.roles]
+            if role_name in guild_role_names:
+                await ctx.send("Invalid role name.")
+                return
+
             position_ref_role = self.myguild.get_role(position_reference_role_id)
             custom_role = await self.myguild.create_role(name=role_name, colour=discord.Colour(actual_color_code))
             positions = {custom_role: position_ref_role.position + 1}
