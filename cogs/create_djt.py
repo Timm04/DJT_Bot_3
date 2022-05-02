@@ -44,7 +44,7 @@ djt_channels = {
               ("djt-radio", "Post or talk about music."),
               ("vc-chat", "Voice chat text channel.")],
 
-    "JOIN": [("welcome", "Welcome to DJT Discord!"),
+    "JOIN": [("welcome", "Welcome!"),
              ("beginner-questions", "Read the pinned messages if you're a beginner."),
              ("search-request", "Search for anime scenes."),
              ("join-quiz", "Please read the pinned message to find out how to join."),

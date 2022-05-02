@@ -38,13 +38,13 @@ class BasicSetup(commands.Cog):
             if send_welcome_message:
                 welcome_message_channel = self.bot.get_channel(join_quiz_message_id)
                 instructions_channel = self.bot.get_channel(welcome_channel_id)
-                welcomemessage = (f"Hello {member.mention}! Welcome to Daily Japanese Thread. "
+                welcomemessage = (f"Hello {member.mention}! Welcome to {member.guild.name}. "
                                   f"**Access to all channels is restricted to Japanese learners!**"
                                   f"\nTo join type `k!quiz n4 nodelay atl=10 14 size=80 mmq=2` "
                                   f"and get 14 points (max 1 failed question)."
                                   f"\nYou have unlimited tries."
                                   f" More Information in {instructions_channel.mention}"
-                                  f"\n\nこんにちは{member.mention}さん! DJT Chatへようこそ"
+                                  f"\n\nこんにちは{member.mention}さん! {member.guild.name}へようこそ"
                                   f"\nこのサーバーは日本語検定でN4級以上の日本語力がある方にのみ入室が許可されています。"
                                   f"\n`k!quiz n4 nodelay atl=10 14 size=80 mmq=2`と入力し、日本語のテストを開始してください。"
                                   f"\n合格点は14点、ミスは2回までです。何回でもチャレンジしてください。")
