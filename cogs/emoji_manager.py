@@ -275,16 +275,38 @@ class EmojiManagement(commands.Cog):
             combined_message = "\n".join(current_field_string)
             if len(combined_message) > 900:
                 myembed.add_field(name=f"Emoji:", value=combined_message, inline=True)
+                current_field_string = []
                 if len(myembed) > 5000:
                     await ctx.send(embed=myembed)
                     myembed = discord.Embed(title="DJT Emoji Usage Statistics.")
-                current_field_string = []
 
         if current_field_string:
             combined_message = "\n".join(current_field_string)
             myembed.add_field(name=f"Emoji:", value=combined_message, inline=True)
 
         await ctx.send(embed=myembed)
+
+        myembed = discord.Embed(title="The following emoji names not used are present in the database:")
+        current_field_string = []
+        counter = 1
+        for emoji_name, uses in sorted(self.emoji_usage_dict.items(), key=lambda x: x[1], reverse=True):
+            if emoji_name not in [emoji.name for emoji in ctx.guild.emojis]:
+                current_field_string.append(f"{counter}. {emoji_name} with {uses}")
+                counter += 1
+                combined_message = "\n".join(current_field_string)
+                if len(combined_message) > 900:
+                    myembed.add_field(name=f"Emoji names:", value=combined_message, inline=True)
+                    current_field_string = []
+                    if len(myembed) > 5000:
+                        await ctx.send(embed=myembed)
+                        myembed = discord.Embed(title="The following emoji names not used are present in the database:")
+
+        if current_field_string:
+            combined_message = "\n".join(current_field_string)
+            myembed.add_field(name=f"Emoji names:", value=combined_message, inline=True)
+
+        await ctx.send(embed=myembed)
+
 
 def setup(bot):
     bot.add_cog(EmojiManagement(bot))
