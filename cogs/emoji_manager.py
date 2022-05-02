@@ -275,6 +275,9 @@ class EmojiManagement(commands.Cog):
             combined_message = "\n".join(current_field_string)
             if len(combined_message) > 900:
                 myembed.add_field(name=f"Emoji:", value=combined_message, inline=True)
+                if len(myembed) > 5000:
+                    await ctx.send(embed=myembed)
+                    myembed = discord.Embed(title="DJT Emoji Usage Statistics.")
                 current_field_string = []
 
         if current_field_string:
