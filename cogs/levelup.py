@@ -308,7 +308,8 @@ class Quiz(commands.Cog):
                                         await quizwinner.add_roles(newrole)
                                         announcementchannel = self.bot.get_channel(announcement_channel_id)
                                         await announcementchannel.send(f'<@!{mainuserid}> has passed the {quizname}!\n'
-                                                                       f'Type `$levelup` to get the next level-up command.')
+                                                                       f'Type `$levelup` to get the next level-up command.',
+                                                                       file=discord.File(r'data/omedetou.mp4'))
 
             except TypeError:
                 pass
