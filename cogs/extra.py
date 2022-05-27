@@ -67,7 +67,7 @@ class Extras(commands.Cog):
         await ctx.send(f"{ctx.author.mention} You muted yourself for {int(hours)} hours.")
 
     @commands.command()
-    async def createvc(self, ctx: commands.Context, channel_name):
+    async def createvc(self, ctx: commands.Context, *, channel_name):
         """`<channel_name>` Create a custom temporary voice chat channel."""
         if ctx.author.voice:
             other_category = discord.utils.get(ctx.guild.categories, name="OTHER")
