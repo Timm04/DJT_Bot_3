@@ -23,6 +23,7 @@ class Extras(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.myguild = self.bot.get_guild(guild_id)
+        self.check_custom_vcs.start()
         await asyncio.sleep(600)
         self.add_members_to_movie.start()
 
@@ -83,12 +84,23 @@ class Extras(commands.Cog):
             while custom_channel.members:
                 await asyncio.sleep(10)
 
-            await custom_channel.delete(reason="Empty channel.")
+            await custom_channel.delete(reason="Empty custom channel.")
             await ctx.send(f"Deleted custom channel `{custom_channel.name}` as all members left.")
 
         else:
             await ctx.send("You have to join a voice channel to use this command.")
             return
+
+    @tasks.loop(minutes=5.0)
+    async def check_custom_vcs(self):
+        standard_channels = ["free-talk 64kbps", "free-talk 256kbps"]
+        self.myguild: discord.Guild
+        for voice_channel in self.myguild.voice_channels:
+            if voice_channel.name not in standard_channels:
+                if not voice_channel.members:
+                    vc_chat = discord.utils.get(self.myguild.channels, name="vc-chat")
+                    await vc_chat.send(f"Deleted custom channel `{voice_channel.name}` as all members left.")
+                    await voice_channel.delete(reason="Empty custom channel.")
 
     @tasks.loop(minutes=60.0)
     async def add_members_to_movie(self):
