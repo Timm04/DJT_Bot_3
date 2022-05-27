@@ -4,6 +4,7 @@ import re
 import asyncio
 import json
 from discord.ext import commands
+from discord.ext import tasks
 from datetime import timedelta
 
 #############################################################
@@ -22,6 +23,8 @@ class Extras(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         self.myguild = self.bot.get_guild(guild_id)
+        await asyncio.sleep(600)
+        self.add_members_to_movie.start()
 
     # Send messages over bot
     @commands.Cog.listener()
@@ -86,6 +89,23 @@ class Extras(commands.Cog):
         else:
             await ctx.send("You have to join a voice channel to use this command.")
             return
+
+    @tasks.loop(minutes=60.0)
+    async def add_members_to_movie(self):
+        movie_role = discord.utils.get(self.myguild.roles, name="Movie")
+        movie_thread = discord.utils.get(self.myguild.threads, name="Movie Watching")
+        thread_member_ids = [member.id for member in await movie_thread.fetch_members()]
+        added_members = []
+        for member in movie_role.members:
+            if member.id not in thread_member_ids:
+                await asyncio.sleep(1)
+                await movie_thread.add_user(member)
+                added_members.append(str(member))
+                print(f"Added {member.name} to the movie thread.")
+
+        if added_members:
+            member_string = ", ".join(added_members)
+            await movie_thread.send(f"Added the following members to the thread: {member_string}")
 
 
 
