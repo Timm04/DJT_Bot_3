@@ -66,6 +66,27 @@ class Extras(commands.Cog):
         await ctx.author.timeout_for(hours_to_mute)
         await ctx.send(f"{ctx.author.mention} You muted yourself for {int(hours)} hours.")
 
+    @commands.command()
+    async def createvc(self, ctx: commands.Context, channel_name):
+        """`<channel_name>` Create a custom temporary voice chat channel."""
+        if ctx.author.voice:
+            other_category = discord.utils.get(ctx.guild.categories, name="OTHER")
+            free_talk_position = discord.utils.get(ctx.guild.voice_channels, name="free-talk 256kbps").position
+            custom_channel = await ctx.guild.create_voice_channel(channel_name, category=other_category,
+                                                                  position=free_talk_position+1)
+            await ctx.author.move_to(custom_channel)
+            await ctx.send(f"Created custom channel `{custom_channel.name}`. Channel will be deleted when all users left.")
+
+            while custom_channel.members:
+                await asyncio.sleep(10)
+
+            await custom_channel.delete(reason="Empty channel.")
+            await ctx.send(f"Deleted custom channel `{custom_channel.name}` as all members left.")
+
+        else:
+            await ctx.send("You have to join a voice channel to use this command.")
+            return
+
 
 
 
