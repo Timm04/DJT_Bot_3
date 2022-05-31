@@ -77,7 +77,7 @@ class DeletedMSG(commands.Cog):
     @commands.Cog.listener()
     async def on_member_ban(self, guild, user):
         admin_role = self.myguild.get_role(admin_role_id)
-        await mod_channel.send(f"{admin_role.mention} {user.mention} {user.name} just got banned!")
+        await self.mod_channel.send(f"{admin_role.mention} {user.mention} {user.name} just got banned!")
 
 
 

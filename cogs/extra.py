@@ -57,18 +57,18 @@ class Extras(commands.Cog):
         await msg.edit(content=content)
         await ctx.send("Success.")
 
-    @commands.command()
-    async def timeout(self, ctx: commands.Context, hours: str):
-        """<hours> Mute yourself for a specific amount of hours."""
-        if not hours.isnumeric():
-            await ctx.send("Please specify the number of hours to mute yourself.")
-            return
-        if int(hours) > 12:
-            await ctx.send("You can only mute yourself for a maximum amount of 12 hours.")
-            return
-        hours_to_mute = timedelta(hours=int(hours))
-        await ctx.author.timeout_for(hours_to_mute)
-        await ctx.send(f"{ctx.author.mention} You muted yourself for {int(hours)} hours.")
+    # @commands.command()
+    # async def timeout(self, ctx: commands.Context, hours: str):
+    #     """<hours> Mute yourself for a specific amount of hours."""
+    #     if not hours.isnumeric():
+    #         await ctx.send("Please specify the number of hours to mute yourself.")
+    #         return
+    #     if int(hours) > 12:
+    #         await ctx.send("You can only mute yourself for a maximum amount of 12 hours.")
+    #         return
+    #     hours_to_mute = timedelta(hours=int(hours))
+    #     await ctx.author.timeout_for(hours_to_mute)
+    #     await ctx.send(f"{ctx.author.mention} You muted yourself for {int(hours)} hours.")
 
     @commands.command()
     async def createvc(self, ctx: commands.Context, *, channel_name):

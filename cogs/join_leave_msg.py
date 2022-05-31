@@ -1,14 +1,16 @@
 """Cog for for join and leave messages and the presence status."""
-
 import discord
 from discord.ext import commands
 import json
+import boto3
+import botocore.exceptions
+
 
 #############################################################
 # Variables (Temporary)
 with open(f"cogs/guild_data.json") as json_file:
     data_dict = json.load(json_file)
-    main_guild_id = data_dict["guild_id"]
+    guild_id = data_dict["guild_id"]
 
     send_welcome_message = True
     join_quiz_message_id = data_dict["join_quiz_1_id"]
@@ -31,10 +33,37 @@ class BasicSetup(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    @commands.Cog.listener()
+    async def on_ready(self):
+        self.myguild = self.bot.get_guild(guild_id)
+        self.s3_client = boto3.client('s3')
+
+    def pull_all_records(self, fname):
+        try:
+            self.s3_client.download_file('djtbot', fname, f'data/{fname}')
+        except botocore.exceptions.ClientError:
+            try:
+                with open(f"data/{fname}") as json_file:
+                    data_dict = json.load(json_file)
+                    return data_dict
+            except FileNotFoundError:
+                empty_dict = dict()
+                return empty_dict
+
+        with open(f"data/{fname}") as json_file:
+            data_dict = json.load(json_file)
+
+        return data_dict
+
+    def push_all_records(self, data_dict, fname):
+        with open(f'data/{fname}', 'w') as json_file:
+            json.dump(data_dict, json_file)
+        self.s3_client.upload_file(f'data/{fname}', "djtbot", f'{fname}')
+
     # Welcome Message & Standard Role
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member):
-        if member.guild.id == main_guild_id:
+        if member.guild.id == guild_id:
             if send_welcome_message:
                 welcome_message_channel = self.bot.get_channel(join_quiz_message_id)
                 instructions_channel = self.bot.get_channel(welcome_channel_id)
@@ -60,16 +89,36 @@ class BasicSetup(commands.Cog):
                 join_role = member.guild.get_role(join_role_id)
                 await member.add_roles(join_role)
 
+    async def increment_leave_count(self, member: discord.Member):
+        if "農奴 / Unranked" in [role.name for role in member.roles]:
+            return 0
+        leave_count_dict = self.pull_all_records("leave_count.json")
+        leave_count_dict[str(member.id)] = leave_count_dict.get(str(member.id), 0) + 1
+        self.push_all_records(leave_count_dict, "leave_count.json")
+        return leave_count_dict[str(member.id)]
+
+    @commands.command(hidden=True)
+    @commands.has_permissions(administrator=True)
+    async def clearleavecount(self, ctx, member_id):
+        leave_count_dict = self.pull_all_records("leave_count.json")
+        leave_count_dict[member_id] = 0
+        self.push_all_records(leave_count_dict, "leave_count.json")
+        await ctx.send("Done.")
+
     # Leave Message (with rank)
     @commands.Cog.listener()
     async def on_member_remove(self, member: discord.Member):
-        if member.guild.id == main_guild_id:
+        if member.guild.id == guild_id:
             if send_leave_message:
                 leave_message_channel = self.bot.get_channel(leave_message_channel_id)
+                leave_count = await self.increment_leave_count(member)
+                if leave_count == 5:
+                    await member.ban(reason="Leave Coping.")
+                    await leave_message_channel.send(f"{str(member)} has been banned for leave coping..")
                 for role in member.roles:
                     if role.id in quizranks:
                         rankname = role.name
-                await leave_message_channel.send(f"**{str(member)}** ({rankname}) just left the server.")
+                await leave_message_channel.send(f"**{str(member)}** ({rankname}) just left the server. ({leave_count}/5)")
 
 def setup(bot):
     bot.add_cog(BasicSetup(bot))
