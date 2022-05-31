@@ -146,6 +146,8 @@ class Deleter(commands.Cog):
         delete_limit = timedelta(hours=24)
 
         def contains_curse_words(message: discord.Message):
+            if message.pinned:
+                return False
             if message.author.bot:
                 return False
             elif "nigger" in message.content.lower():
