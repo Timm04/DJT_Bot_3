@@ -58,7 +58,7 @@ class Moderation(commands.Cog):
         else:
             return True
 
-    async def ask_reason(self, ctx, action_info):
+    async def ask_reason(self, ctx: commands.Context, action_info):
 
         await ctx.send(f"{ctx.author.mention} Please specify the reason for this moderator action:")
 
@@ -75,9 +75,9 @@ class Moderation(commands.Cog):
         attachments = message.attachments
         if attachments:
             files = [await attachment.to_file() for attachment in attachments]
-            await self.mod_channel.send(f"{action_info}\n`{reason}`", files=files)
+            await self.mod_channel.send(f"{action_info}\n`{reason}`\n{ctx.message.jump_url}", files=files)
         else:
-            await self.mod_channel.send(f"{action_info}\n`{reason}`")
+            await self.mod_channel.send(f"{action_info}\n`{reason}`\n{ctx.message.jump_url}")
         return message
 
     async def get_member(self, ctx, user_mention):
@@ -95,6 +95,8 @@ class Moderation(commands.Cog):
     async def mute(self, ctx, user_mention, hours):
 
         target_member = await self.get_member(ctx, user_mention)
+        if not target_member:
+            return
 
         if not hours.isnumeric():
             await ctx.send("Please specify the number of hours to mute this user.")
@@ -120,6 +122,8 @@ class Moderation(commands.Cog):
     async def delete(self, ctx, user_mention, message_count):
 
         target_member = await self.get_member(ctx, user_mention)
+        if not target_member:
+            return
 
         if not message_count.isnumeric():
             await ctx.send("Please specify the number of messages to delete.")
@@ -181,6 +185,8 @@ class Moderation(commands.Cog):
     async def warn(self, ctx, user_mention):
 
         target_member = await self.get_member(ctx, user_mention)
+        if not target_member:
+            return
 
         if not await self.increment_mod_action(ctx):
             return
@@ -203,6 +209,8 @@ class Moderation(commands.Cog):
     async def kick(self, ctx, user_mention):
 
         target_member = await self.get_member(ctx, user_mention)
+        if not target_member:
+            return
 
         if not await self.increment_mod_action(ctx):
             return

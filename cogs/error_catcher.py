@@ -48,6 +48,9 @@ class ErrorHandler(commands.Cog):
         elif isinstance(error, commands.errors.CommandOnCooldown):
             await ctx.send(f"This command is currently on cooldown. You can use this command again after {int(error.retry_after)} seconds.")
             return
+        elif isinstance(error, commands.errors.CheckFailure):
+            await ctx.send(f"Checks for this command failed.")
+            return
         elif ctx.command and ctx.command.name == "levelup":
             await ctx.send(f"I am unable to send you a message {ctx.author.mention}. Please enable private messages.\n"
                            f"You can use the following command for your next level-up:")
