@@ -140,13 +140,19 @@ class Moderation(commands.Cog):
         if not await self.ask_reason(ctx, action_info):
             return
 
+        deletion_counter = 0
         def purge_condition(message: discord.Message):
             if message.author.id == target_member.id:
-                return True
+                nonlocal deletion_counter
+                deletion_counter += 1
+                if deletion_counter < int(message_count):
+                    return True
+                else:
+                    return False
             else:
                 return False
 
-        messages = await ctx.channel.purge(limit=int(message_count), check=purge_condition)
+        messages = await ctx.channel.purge(limit=1000, check=purge_condition)
         message_content = "\n".join([message.content for message in messages])
 
         with open(f'data/deleted_message_content.txt', 'w') as text_file:
