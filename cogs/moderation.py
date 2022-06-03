@@ -152,7 +152,7 @@ class Moderation(commands.Cog):
             else:
                 return False
 
-        messages = await ctx.channel.purge(limit=1000, check=purge_condition)
+        messages = await ctx.channel.purge(limit=400, check=purge_condition)
         message_content = "\n".join([message.content for message in messages])
 
         with open(f'data/deleted_message_content.txt', 'w') as text_file:
