@@ -183,7 +183,7 @@ class Moderation(commands.Cog):
         if not await self.ask_reason(ctx, action_info):
             return
 
-        message_content = f"The message had {len(message_to_delete.attachments)} attachments. Text content: \n`{message_to_delete.content}`"
+        message_content = f"The message had {len(message_to_delete.attachments)} attachments. Text content: \n{message_to_delete.content}"
 
         with open(f'data/deleted_message_content.txt', 'w') as text_file:
             text_file.write(message_content)

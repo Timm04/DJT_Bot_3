@@ -31,15 +31,18 @@ class RankSaver(commands.Cog):
             user_dict = json.load(json_file)
 
         all_members = [member for member in to_save_server.members if member.bot is False]
+        roles_to_not_save = ["@everyone", '農奴 / Unranked', "Server Booster", "Admin", "Mod", "Helper"]
         for member in all_members:
             member_roles = [str(role) for role in member.roles if
-                            role.name != "@everyone" and role.name != '農奴 / Unranked' and role.name != "Server Booster"]
+                            role.name not in roles_to_not_save]
             user_dict[str(member.id)] = member_roles
 
         with open(f'data/rolesdata.json', 'w') as json_file:
             json.dump(user_dict, json_file)
 
         self.s3_client.upload_file(f"data/rolesdata.json", "djtbot", f"rolesdata.json")
+
+        print("Saved roles.")
 
 def setup(bot):
     bot.add_cog(RankSaver(bot))
