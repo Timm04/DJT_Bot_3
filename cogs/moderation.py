@@ -60,7 +60,7 @@ class Moderation(commands.Cog):
 
     async def ask_reason(self, ctx: commands.Context, action_info):
 
-        await ctx.send(f"{ctx.author.mention} Please specify the reason for this moderator action:")
+        ask_message = await ctx.send(f"{ctx.author.mention} Please specify the reason for this moderator action:")
 
         def response_check(message):
             return message.author.id == ctx.author.id
@@ -78,6 +78,7 @@ class Moderation(commands.Cog):
             await self.mod_channel.send(f"{action_info}\n`{reason}`\n{ctx.message.jump_url}", files=files)
         else:
             await self.mod_channel.send(f"{action_info}\n`{reason}`\n{ctx.message.jump_url}")
+        await ask_message.delete()
         return message
 
     async def get_member(self, ctx, user_mention):
