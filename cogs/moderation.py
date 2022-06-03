@@ -165,7 +165,7 @@ class Moderation(commands.Cog):
 
     @commands.command(hidden=True)
     @has_permission()
-    async def delete(self, ctx, message_id):
+    async def delete(self, ctx: commands.Context, message_id):
 
         message_to_delete = await ctx.channel.fetch_message(message_id)
 
@@ -186,7 +186,8 @@ class Moderation(commands.Cog):
 
         action_info = f"**MODERATOR LOG**\n{ctx.author.mention} just deleted a message from {target_member.mention} in the channel {message_to_delete.channel.name} with the following reason:"
 
-        if not await self.ask_reason(ctx, action_info):
+        reason_message = await self.ask_reason(ctx, action_info)
+        if not reason_message:
             return
 
         message_content = f"The message had {len(message_to_delete.attachments)} attachments. Text content: \n{message_to_delete.content}"
@@ -198,7 +199,18 @@ class Moderation(commands.Cog):
         os.remove("data/deleted_message_content.txt")
 
         await message_to_delete.delete()
-        await ctx.send(f"{ctx.author.mention} just deleted a message from {target_member.mention}.")
+        action_message = await ctx.send(f"{ctx.author.mention} just deleted a message from {target_member.mention}.")
+
+        await asyncio.sleep(5)
+        messages_to_delete = [ctx.message, action_message, reason_message]
+
+        def purge_condition(message: discord.Message):
+            if message in messages_to_delete:
+                return True
+            else:
+                return False
+
+        await ctx.channel.purge(limit=20, check=purge_condition)
 
     
     async def get_warnings(self):
