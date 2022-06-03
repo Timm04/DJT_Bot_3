@@ -119,7 +119,7 @@ class Moderation(commands.Cog):
 
     @commands.command(hidden=True)
     @has_permission()
-    async def delete(self, ctx, user_mention, message_count):
+    async def purge(self, ctx, user_mention, message_count):
 
         target_member = await self.get_member(ctx, user_mention)
         if not target_member:
@@ -156,6 +156,43 @@ class Moderation(commands.Cog):
         os.remove("data/deleted_message_content.txt")
 
         await ctx.send(f"{ctx.author.mention} just deleted the last {message_count} messages from {target_member.mention}.")
+
+    @commands.command(hidden=True)
+    @has_permission()
+    async def delete(self, ctx, message_id):
+
+        message_to_delete = await ctx.channel.fetch_message(message_id)
+
+        target_member = await self.get_member(ctx, str(message_to_delete.author.id))
+        if not target_member:
+            return
+
+        if not message_id.isnumeric():
+            await ctx.send("Please properly specify the message id.")
+            return
+
+        if message_to_delete.pinned:
+            await ctx.send("You can't delete pinned messages")
+            return
+
+        if not await self.increment_mod_action(ctx):
+            return
+
+        action_info = f"**MODERATOR LOG**\n{ctx.author.mention} just deleted a message from {target_member.mention} in the channel {message_to_delete.channel.name} with the following reason:"
+
+        if not await self.ask_reason(ctx, action_info):
+            return
+
+        message_content = f"The message had {len(message_to_delete.attachments)} attachments. Text content: \n`{message_to_delete.content}`"
+
+        with open(f'data/deleted_message_content.txt', 'w') as text_file:
+            text_file.write(message_content)
+
+        await self.mod_channel.send(file=discord.File("data/deleted_message_content.txt"))
+        os.remove("data/deleted_message_content.txt")
+
+        await message_to_delete.delete()
+        await ctx.send(f"{ctx.author.mention} just deleted a message from {target_member.mention}.")
 
     
     async def get_warnings(self):
