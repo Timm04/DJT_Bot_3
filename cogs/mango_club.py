@@ -6,12 +6,13 @@ from discord.ext import tasks
 import json
 import boto3
 import asyncio
+from datetime import datetime
 
 
 def is_manga_manager():
     async def predicate(ctx):
         run_command = False
-        if ctx.author.id == 922627087020482651:
+        if ctx.author.id == 922627087020482651 or ctx.author.id == 329425408418250752:
             run_command = True
         return run_command
 
@@ -23,7 +24,7 @@ with open(f"cogs/guild_data.json") as json_file:
     data_dict = json.load(json_file)
     guild_id = data_dict["guild_id"]
 
-class manga(commands.Cog):
+class Manga(commands.Cog):
     """Manga cog"""
 
     def __init__(self, bot):
@@ -39,6 +40,8 @@ class manga(commands.Cog):
         await self.create_rules_post()
         self.update_posts.start()
         self.give_roles.start()
+
+        self.starter = False
 
     def pull_all_records(self, fname):
         try:
@@ -254,4 +257,4 @@ Should you abuse this feature or write a fake review you will be banned from the
 
 
 def setup(bot):
-    bot.add_cog(manga(bot))
+    bot.add_cog(Manga(bot))
