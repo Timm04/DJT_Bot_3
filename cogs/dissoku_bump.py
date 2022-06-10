@@ -112,7 +112,7 @@ class DissokuBumpCog(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
-    async def updateleaderboard(self, ctx):
+    async def updateleaderboard_dissoku(self, ctx):
         await self.increment_leaderboard(None)
         await ctx.send("Success.")
 
