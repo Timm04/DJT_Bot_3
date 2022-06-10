@@ -112,7 +112,7 @@ class BasicSetup(commands.Cog):
             if send_leave_message:
                 leave_message_channel = self.bot.get_channel(leave_message_channel_id)
                 leave_count = await self.increment_leave_count(member)
-                if leave_count == 5:
+                if leave_count >= 5:
                     await member.ban(reason="Leave Coping.")
                     await leave_message_channel.send(f"{str(member)} has been banned for leave coping..")
                 for role in member.roles:
