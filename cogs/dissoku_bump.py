@@ -21,7 +21,7 @@ with open(f"cogs/guild_data.json") as json_file:
     bumper_role = data_dict["bumper_role_id"]
 #############################################################
 
-class BumpCog(commands.Cog):
+class DissokuBumpCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
@@ -218,4 +218,4 @@ class BumpCog(commands.Cog):
                 await self.msg_channel.send(f"Idled for {self.time_idled} minutes. Bump now with `/dissoku up`")
 
 def setup(bot):
-    bot.add_cog(BumpCog(bot))
+    bot.add_cog(DissokuBumpCog(bot))
