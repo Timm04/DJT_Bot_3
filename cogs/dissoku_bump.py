@@ -65,18 +65,18 @@ class DissokuBumpCog(commands.Cog):
 
     async def increment_leaderboard(self, userid):
         userid = str(userid)
-        self.s3_client.download_file('djtbot', "bumping/dissoku upleaderboard.json", 'data/dissoku upleaderboard.json')
+        self.s3_client.download_file('djtbot', "bumping/bumpleaderboard.json", 'data/bumpleaderboard.json')
 
-        with open("data/dissoku upleaderboard.json") as json_file:
+        with open("data/bumpleaderboard.json") as json_file:
             leaderboard_dict = json.load(json_file)
 
         if userid:
             leaderboard_dict[userid] = leaderboard_dict.get(userid, 0) + 1
 
-            with open('data/dissoku upleaderboard.json', 'w') as json_file:
+            with open('data/bumpleaderboard.json', 'w') as json_file:
                 json.dump(leaderboard_dict, json_file)
 
-        self.s3_client.upload_file('data/dissoku upleaderboard.json', "djtbot", 'bumping/dissoku upleaderboard.json')
+        self.s3_client.upload_file('data/bumpleaderboard.json', "djtbot", 'bumping/bumpleaderboard.json')
 
         pins = await self.msg_channel.pins()
         old_pins = []
