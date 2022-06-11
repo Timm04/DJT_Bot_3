@@ -69,6 +69,10 @@ class Quiz(commands.Cog):
             message += f"{self.myguild.get_role(roleid)}: {membercountdict[roleid]}\n"
         message += f"Total members: {membercount} ({accountedfor} accounted for)."
 
+        if emptyusers:
+            for empty_user_string in emptyusers:
+                message += f"\nThe following user has no role {empty_user_string}"
+
         await ctx.send(message)
 
     @commands.command()
