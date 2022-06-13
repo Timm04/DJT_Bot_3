@@ -119,6 +119,12 @@ class Extras(commands.Cog):
             member_string = ", ".join(added_members)
             await movie_thread.send(f"Added the following members to the thread: {member_string}")
 
+    @commands.command(hidden=True)
+    @commands.has_permissions(administrator=True)
+    async def superpurge(self, ctx: commands.Context):
+        await ctx.channel.purge(limit=500)
+        await ctx.send("Done.")
+
 
 
 
