@@ -72,7 +72,7 @@ class Anime(commands.Cog):
     async def remove_anime(self, ctx, anime_code):
         anime_database = self.pull_all_records("anime_database.json")
         anime_name = anime_database[anime_code]
-        anime_database.remove(anime_code)
+        del anime_database[anime_code]
         self.push_all_records(anime_database, "anime_database.json")
         await self.update_posts()
         await ctx.send(f"Remove {anime_name} from database.")

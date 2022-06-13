@@ -79,7 +79,7 @@ class Manga(commands.Cog):
     async def remove_manga(self, ctx, manga_code):
         manga_database = self.pull_all_records("manga_database.json")
         manga_name = manga_database[manga_code]
-        manga_database.remove(manga_code)
+        del manga_database[manga_code]
         self.push_all_records(manga_database, "manga_database.json")
         await self.update_posts()
         await ctx.send(f"Remove {manga_name} from database.")
