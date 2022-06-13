@@ -121,11 +121,10 @@ class Extras(commands.Cog):
 
     @commands.command(hidden=True)
     @commands.has_permissions(administrator=True)
-    async def superpurge(self, ctx: commands.Context):
-        await ctx.channel.purge(limit=500)
+    async def superpurge(self, ctx: commands.Context, message_count):
+        await ctx.channel.purge(limit=int(message_count))
         await ctx.send("Done.")
-
-
+        return
 
 
 def setup(bot):
